@@ -3,6 +3,7 @@ export interface AttendanceRecordListItem {
   readonly employeeId: string;
   readonly branchId?: string | null;
   readonly shiftId?: string | null;
+  readonly timeZone?: string | null;
   readonly attendanceDate: string;
   readonly checkInDate?: string | null;
   readonly checkOutDate?: string | null;
@@ -18,6 +19,7 @@ export interface AttendanceRecord {
   readonly employeeId: string;
   readonly branchId?: string | null;
   readonly shiftId?: string | null;
+  readonly timeZone?: string | null;
   readonly attendanceDate: string;
   readonly shiftStartDateTime?: string | null;
   readonly shiftEndDateTime?: string | null;

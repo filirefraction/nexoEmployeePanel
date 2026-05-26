@@ -126,6 +126,11 @@
   color: var(--ne-accent);
 }
 
+.vacations-page__status--muted {
+  background: rgba(92, 107, 132, 0.14);
+  color: #516177;
+}
+
 .vacations-page__section-head {
   display: flex;
   justify-content: space-between;

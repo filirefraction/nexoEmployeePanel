@@ -16,7 +16,7 @@ export class ApiErrorService {
     if (!(error instanceof HttpErrorResponse)) {
       return {
         statusCode: 0,
-        message: fallbackMessage,
+        message: this.translateMessage(fallbackMessage),
         errors: []
       };
     }
@@ -31,8 +31,8 @@ export class ApiErrorService {
 
     return {
       statusCode: error.status,
-      message: apiError?.message || this.getStatusMessage(error.status, fallbackMessage),
-      errors: apiError?.errors ?? [],
+      message: this.translateMessage(apiError?.message || this.getStatusMessage(error.status, fallbackMessage)),
+      errors: (apiError?.errors ?? []).map((item) => this.translateMessage(item)),
       correlationId: apiError?.correlationId
     };
   }
@@ -46,7 +46,7 @@ export class ApiErrorService {
   private getStatusMessage(statusCode: number, fallbackMessage: string): string {
     switch (statusCode) {
       case 0:
-        return fallbackMessage;
+        return 'No fue posible conectar con el servidor. Verifica que la API este disponible.';
       case 401:
         return 'Tu sesión expiró o ya no es válida.';
       case 403:
@@ -64,5 +64,35 @@ export class ApiErrorService {
 
         return fallbackMessage;
     }
+  }
+
+  private translateMessage(message: string): string {
+    const normalizedMessage = message.trim();
+
+    if (!normalizedMessage) {
+      return normalizedMessage;
+    }
+
+    const translations: Record<string, string> = {
+      'Invalid email or password.': 'Correo o contrasena incorrectos.',
+      'Validation error.': 'Error de validacion.',
+      'Only pending vacation requests can perform this action.':
+        'Solo las solicitudes pendientes pueden realizar esta accion.',
+      'The authenticated user is not linked to an active employee.':
+        'Tu cuenta no esta vinculada a un empleado activo.',
+      'The authenticated user is not linked to a valid employee.':
+        'Tu cuenta no esta vinculada a un empleado valido para este portal.',
+      'No open attendance record was found for the current employee.':
+        'No se encontro una asistencia abierta para el empleado actual.',
+      'Attendance is not required for this employee.':
+        'La asistencia no es obligatoria para este empleado.',
+      'The employee already has an open attendance record.':
+        'El empleado ya tiene una asistencia abierta.',
+      'Vacation requests are disabled for the current company.':
+        'Las solicitudes de vacaciones estan deshabilitadas para la empresa actual.',
+      'Request completed successfully.': 'La solicitud se completo correctamente.'
+    };
+
+    return translations[normalizedMessage] ?? normalizedMessage;
   }
 }

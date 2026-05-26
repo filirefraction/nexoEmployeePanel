@@ -40,6 +40,20 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'access-denied',
+    loadComponent: () =>
+      import('./core/layout/auth-shell/auth-shell.component').then((m) => m.AuthShellComponent),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/system/pages/access-denied-page/access-denied-page.component').then(
+            (m) => m.AccessDeniedPageComponent
+          )
+      }
+    ]
+  },
+  {
     path: 'app',
     canActivate: [authGuard],
     loadComponent: () =>

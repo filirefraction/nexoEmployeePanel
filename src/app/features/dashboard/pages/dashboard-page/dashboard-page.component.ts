@@ -1,11 +1,11 @@
-import { DatePipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
+import { DecimalPipe, NgFor, NgIf } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { EmployeeDashboardFacade } from '../../facades/employee-dashboard.facade';
 import { EmployeeAttendanceSnapshot } from '../../models/employee-summary.model';
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [DatePipe, DecimalPipe, NgFor, NgIf],
+  imports: [DecimalPipe, NgFor, NgIf],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.css'
 })
@@ -70,5 +70,47 @@ export class DashboardPageComponent {
 
   protected trackAttendance(_index: number, item: EmployeeAttendanceSnapshot): string {
     return item.id;
+  }
+
+  protected formatLocalDateTime(
+    value: string | null | undefined,
+    timeZone: string,
+    options: Intl.DateTimeFormatOptions
+  ): string {
+    if (!value) {
+      return 'Sin registro';
+    }
+
+    return new Intl.DateTimeFormat('es-MX', {
+      ...options,
+      timeZone
+    }).format(new Date(value));
+  }
+
+  protected formatLocalDate(value: string, timeZone: string, options: Intl.DateTimeFormatOptions): string {
+    return new Intl.DateTimeFormat('es-MX', {
+      ...options,
+      timeZone
+    }).format(new Date(`${value}T12:00:00Z`));
+  }
+
+  protected formatUtcDateTime(
+    value: string | null | undefined,
+    timeZone: string,
+    options: Intl.DateTimeFormatOptions
+  ): string {
+    if (!value) {
+      return 'Sin registro';
+    }
+
+    return new Intl.DateTimeFormat('es-MX', {
+      ...options,
+      timeZone
+    }).format(this.parseUtcDateTime(value));
+  }
+
+  private parseUtcDateTime(value: string): Date {
+    const hasOffset = /[zZ]|[+-]\d{2}:\d{2}$/.test(value);
+    return new Date(hasOffset ? value : `${value}Z`);
   }
 }

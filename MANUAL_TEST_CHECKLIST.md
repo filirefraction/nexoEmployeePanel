@@ -1,4 +1,4 @@
-# MANUAL_TEST_CHECKLIST
+﻿# MANUAL_TEST_CHECKLIST
 
 ## Objetivo
 
@@ -7,9 +7,9 @@ Validar funcionalmente `nexoEmployeePanel` contra `nexoApi`.
 ## Precondiciones
 
 - `nexoApi` corriendo en `http://localhost:5031`
-- `nexoEmployeePanel` corriendo en `http://localhost:4200`
+- `nexoEmployeePanel` corriendo en `http://localhost:4201`
 - usuario con rol `employee`
-- usuario con `employeeId` válido
+- usuario con `employeeId` valido
 - datos demo en asistencia y vacaciones si se quiere probar historial
 
 ## 1. Auth
@@ -17,28 +17,36 @@ Validar funcionalmente `nexoEmployeePanel` contra `nexoApi`.
 ### Login correcto
 
 - abrir `/login`
-- capturar credenciales válidas
-- verificar redirección a `/app/inicio`
+- capturar credenciales validas
+- verificar redireccion a `/app/inicio`
 
 Esperado:
 
-- sesión creada
+- sesion creada
 - shell autenticado visible
 - nombre del usuario en header
 
-### Login inválido
+Resultado:
+
+- `OK`
+
+### Login invalido
 
 - capturar password incorrecto
 
 Esperado:
 
-- error claro en español
+- error claro en espanol
 - no entrar al shell
+
+Resultado:
+
+- `OK`
 
 ### Refresh token
 
-- iniciar sesión
-- esperar expiración del access token
+- iniciar sesion
+- esperar expiracion del access token
 - navegar a una ruta protegida
 
 Esperado:
@@ -47,15 +55,28 @@ Esperado:
 - request original recuperada
 - no expulsar al usuario
 
-### Sesión expirada
+Resultado:
+
+- `OK`
+
+### Sesion expirada
 
 - invalidar refresh token o dejar que falle
 - navegar a una ruta protegida
 
 Esperado:
 
-- limpiar sesión
+- limpiar sesion
 - abrir `/session-expired`
+
+Resultado:
+
+- `OK`
+
+Nota:
+
+- apagar la API provoca error de red, no expiracion real de sesion
+- `/session-expired` aplica cuando falla refresh o llega `401` real
 
 ## 2. Dashboard
 
@@ -71,19 +92,37 @@ Esperado:
 - asistencias recientes
 - incidencias recientes
 
+Resultado:
+
+- `OK`
+
+Nota:
+
+- los accesos rapidos de check-in/check-out se retiraron por ahora
+- la operacion diaria queda centralizada en el modulo `Asistencia`
+
 ## 3. Attendance
 
 - abrir `/app/asistencia`
 - probar `check-in`
 - probar `check-out`
 - aplicar filtros por fecha
-- navegar entre páginas si hay más de una
+- navegar entre paginas si hay mas de una
 
 Esperado:
 
-- mensajes claros de éxito/error
+- mensajes claros de exito/error
 - historial actualizado
 - manejo correcto de `409` y `429`
+
+Resultado:
+
+- `OK`
+
+Nota:
+
+- la UI interpreta timestamps UTC y los presenta usando `branch.timeZone`
+- criterio replicado en `nexoAdminPanel/Asistencia` y `nexoAdminPanel/Reports`
 
 ## 4. Vacations
 
@@ -95,10 +134,14 @@ Esperado:
 
 Esperado:
 
-- creación correcta
+- creacion correcta
 - detalle correcto
-- cancelación solo en solicitudes pendientes
+- cancelacion solo en solicitudes pendientes
 - mensajes claros de negocio
+
+Resultado:
+
+- `OK`
 
 ## 5. Perfil
 
@@ -107,19 +150,27 @@ Esperado:
 Esperado:
 
 - datos cargados desde `employee-summary`
-- modo solo lectura explícito
-- no mostrar controles de edición inexistentes
+- modo solo lectura explicito
+- no mostrar controles de edicion inexistentes
+
+Resultado:
+
+- `OK`
 
 ## 6. Guards
 
 ### Usuario no autenticado
 
-- abrir `/app/inicio` sin sesión
+- abrir `/app/inicio` sin sesion
 
 Esperado:
 
 - redirigir a `/login`
-- incluir `returnUrl`
+- incluir eturnUrl`
+
+Resultado:
+
+- `OK`
 
 ### Usuario autenticado incompatible
 
@@ -128,29 +179,47 @@ Esperado:
 Esperado:
 
 - no entrar al portal
-- mostrar `/app/access-denied`
+- mostrar acceso restringido
+- no conservar tokens ni header autenticado del portal
 
-## 7. Móvil/PWA base
+Resultado:
 
-- revisar en viewport móvil
+- `OK`
+
+## 7. Movil/PWA base
+
+- revisar en viewport movil
 - validar `manifest.webmanifest`
 - validar iconos y `theme-color`
 
 Esperado:
 
-- navegación inferior usable
-- layout estable en móvil
+- navegacion inferior usable
+- layout estable en movil
+
+Resultado:
+
+- `OK`
 
 ## 8. Resultado
 
-Marcar por módulo:
-
-- `OK`
-- `Observación`
-- `Bug`
-
-Registrar además:
+Registrar ademas:
 
 - request afectada
 - respuesta HTTP
 - `correlationId` si aplica
+
+## Cierre
+
+Estado final de esta ronda:
+
+- `Auth`: `OK`
+- `Dashboard`: `OK`
+- `Attendance`: `OK`
+- `Vacations`: `OK`
+- `Perfil`: `OK`
+- `Guards`: `OK`
+- `Movil/PWA base`: `OK`
+- `Ronda manual`: `CERRADA`
+
+

@@ -102,31 +102,39 @@ export class VacationsPageComponent {
     this.vacations.load({ pageNumber });
   }
 
-  protected getStatusLabel(item: Pick<VacationRequestListItem, 'isApproved' | 'isRejected'>): string {
-    if (item.isApproved) {
-      return 'Aprobada';
+  protected getStatusLabel(
+    item: Pick<VacationRequestListItem, 'vacationRequestStatusName'> | Pick<VacationRequest, 'vacationRequestStatusName'>
+  ): string {
+    switch (item.vacationRequestStatusName.toLowerCase()) {
+      case 'approved':
+        return 'Aprobada';
+      case 'rejected':
+        return 'Rechazada';
+      case 'canceled':
+        return 'Cancelada';
+      case 'pending':
+      default:
+        return 'Pendiente';
     }
-
-    if (item.isRejected) {
-      return 'Rechazada';
-    }
-
-    return 'Pendiente';
   }
 
-  protected getStatusTone(item: Pick<VacationRequestListItem, 'isApproved' | 'isRejected'>): string {
-    if (item.isApproved) {
-      return 'vacations-page__status--success';
+  protected getStatusTone(
+    item: Pick<VacationRequestListItem, 'vacationRequestStatusName'> | Pick<VacationRequest, 'vacationRequestStatusName'>
+  ): string {
+    switch (item.vacationRequestStatusName.toLowerCase()) {
+      case 'approved':
+        return 'vacations-page__status--success';
+      case 'rejected':
+        return 'vacations-page__status--danger';
+      case 'canceled':
+        return 'vacations-page__status--muted';
+      case 'pending':
+      default:
+        return 'vacations-page__status--warning';
     }
-
-    if (item.isRejected) {
-      return 'vacations-page__status--danger';
-    }
-
-    return 'vacations-page__status--warning';
   }
 
-  protected canCancel(item: Pick<VacationRequest, 'isApproved' | 'isRejected'>): boolean {
-    return !item.isApproved && !item.isRejected;
+  protected canCancel(item: Pick<VacationRequest, 'canCancel'>): boolean {
+    return item.canCancel;
   }
 }

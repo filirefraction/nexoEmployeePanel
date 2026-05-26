@@ -83,19 +83,15 @@
     <ul *ngIf="!isLoading() && records().length" class="attendance-page__list">
       <li *ngFor="let record of records()">
         <div>
-          <strong>{{ record.attendanceDate | date: 'EEEE d MMMM' : undefined : 'es-MX' }}</strong>
+          <strong>{{ formatAttendanceDate(record) }}</strong>
           <small>
             Entrada:
             {{
-              record.checkInDate
-                ? (record.checkInDate | date: 'h:mm a' : undefined : 'es-MX')
-                : 'Sin registro'
+              formatAttendanceTime(record.checkInDate, record.timeZone)
             }}
             · Salida:
             {{
-              record.checkOutDate
-                ? (record.checkOutDate | date: 'h:mm a' : undefined : 'es-MX')
-                : 'Pendiente'
+              record.checkOutDate ? formatAttendanceTime(record.checkOutDate, record.timeZone) : 'Pendiente'
             }}
           </small>
         </div>

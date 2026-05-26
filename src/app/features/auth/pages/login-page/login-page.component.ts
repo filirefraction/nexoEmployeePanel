@@ -43,10 +43,14 @@ export class LoginPageComponent {
       .login(this.loginForm.getRawValue())
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
-        next: () => {
+        next: (user) => {
           const targetUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/app/inicio';
-          const redirectUrl = this.session.isPortalCompatible() ? targetUrl : '/app/access-denied';
-          void this.router.navigateByUrl(redirectUrl);
+          if (!this.session.isUserPortalCompatible(user)) {
+            this.session.rejectIncompatibleSession();
+            return;
+          }
+
+          void this.router.navigateByUrl(targetUrl);
         },
         error: (error: unknown) => {
           this.errorMessage.set(

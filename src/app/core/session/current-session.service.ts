@@ -39,8 +39,7 @@ export class CurrentSessionService {
   readonly permissions = computed(() => this.currentUserState()?.permissions ?? []);
   readonly employeeId = computed(() => this.currentUserState()?.employeeId ?? null);
   readonly isPortalCompatible = computed(() => {
-    const user = this.currentUserState();
-    return Boolean(user && user.isActive && user.employeeId && user.roles.includes('employee'));
+    return this.isUserPortalCompatible(this.currentUserState());
   });
 
   async initialize(): Promise<void> {
@@ -77,12 +76,21 @@ export class CurrentSessionService {
     void this.router.navigate([reason === 'session-expired' ? '/session-expired' : '/login']);
   }
 
+  rejectIncompatibleSession(): void {
+    this.clearSession();
+    void this.router.navigate(['/access-denied']);
+  }
+
   getAccessToken(): string | null {
     return this.tokenStore.getAccessToken();
   }
 
   hasRefreshToken(): boolean {
     return this.tokenStore.hasRefreshToken();
+  }
+
+  isUserPortalCompatible(user: CurrentUser | null | undefined): boolean {
+    return Boolean(user && user.isActive && user.employeeId && user.roles.includes('employee'));
   }
 
   refreshSession(): Observable<void> {
@@ -117,13 +125,27 @@ export class CurrentSessionService {
 
   private restoreSession(): Observable<void> {
     return this.authApi.me().pipe(
-      tap((response) => this.currentUserState.set(response.data)),
+      tap((response) => {
+        if (this.isUserPortalCompatible(response.data)) {
+          this.currentUserState.set(response.data);
+          return;
+        }
+
+        this.clearSession();
+      }),
       map(() => void 0),
       catchError((error: unknown) => {
         if (error instanceof HttpErrorResponse && error.status === 401 && this.hasRefreshToken()) {
           return this.refreshSession().pipe(
             switchMap(() => this.authApi.me()),
-            tap((response) => this.currentUserState.set(response.data)),
+            tap((response) => {
+              if (this.isUserPortalCompatible(response.data)) {
+                this.currentUserState.set(response.data);
+                return;
+              }
+
+              this.clearSession();
+            }),
             map(() => void 0),
             catchError(() => {
               this.clearSession();
@@ -145,6 +167,11 @@ export class CurrentSessionService {
       accessTokenExpiresAtUtc: session.accessTokenExpiresAtUtc,
       refreshTokenExpiresAtUtc: session.refreshTokenExpiresAtUtc
     });
+
+    if (!this.isUserPortalCompatible(session.user)) {
+      this.clearSession();
+      return;
+    }
 
     this.currentUserState.set(session.user);
   }

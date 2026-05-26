@@ -37,25 +37,20 @@
         >
           {{ getAttendanceStatusLabel(data.attendanceStatus) }}
         </span>
-        <small>{{ data.localNow | date: 'EEEE d MMMM, h:mm a' : undefined : 'es-MX' }}</small>
+        <small>
+          {{
+            formatLocalDateTime(data.localNow, data.timeZone, {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true
+            })
+          }}
+        </small>
       </div>
 
-      <div class="dashboard-page__actions">
-        <button
-          class="action-button action-button--primary"
-          type="button"
-          [disabled]="!data.canCheckIn"
-        >
-          {{ data.canCheckIn ? 'Check-in disponible' : 'Check-in no disponible' }}
-        </button>
-        <button
-          class="action-button action-button--secondary"
-          type="button"
-          [disabled]="!data.canCheckOut"
-        >
-          {{ data.canCheckOut ? 'Check-out disponible' : 'Check-out no disponible' }}
-        </button>
-      </div>
     </article>
 
     <section class="dashboard-page__grid">
@@ -63,9 +58,21 @@
         <span class="pill-chip">Turno de hoy</span>
         <h2>{{ data.todayShift?.name || 'Sin turno asignado' }}</h2>
         <p *ngIf="data.todayShift; else noShiftBlock">
-          {{ data.todayShift.scheduledStartLocal | date: 'h:mm a' : undefined : 'es-MX' }}
+          {{
+            formatLocalDateTime(data.todayShift.scheduledStartLocal, data.timeZone, {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true
+            })
+          }}
           -
-          {{ data.todayShift.scheduledEndLocal | date: 'h:mm a' : undefined : 'es-MX' }}
+          {{
+            formatLocalDateTime(data.todayShift.scheduledEndLocal, data.timeZone, {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true
+            })
+          }}
         </p>
         <ng-template #noShiftBlock>
           <p>No hay un turno activo para la fecha actual.</p>
@@ -83,14 +90,24 @@
         <h2>
           {{
             data.todayAttendance?.checkInDate
-              ? (data.todayAttendance?.checkInDate | date: 'h:mm a' : undefined : 'es-MX')
+              ? formatUtcDateTime(data.todayAttendance?.checkInDate, data.timeZone, {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true
+                })
               : 'Sin check-in'
           }}
         </h2>
         <p>
           {{ data.todayAttendance?.checkOutDate ? 'Check-out:' : 'Estatus:' }}
           <strong *ngIf="data.todayAttendance?.checkOutDate; else statusOnly">
-            {{ data.todayAttendance?.checkOutDate | date: 'h:mm a' : undefined : 'es-MX' }}
+            {{
+              formatUtcDateTime(data.todayAttendance?.checkOutDate, data.timeZone, {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+              })
+            }}
           </strong>
         </p>
         <ng-template #statusOnly>
@@ -111,12 +128,24 @@
         <ul *ngIf="data.latestAttendanceRecords.length; else emptyAttendance" class="dashboard-page__list">
           <li *ngFor="let record of data.latestAttendanceRecords; trackBy: trackAttendance">
             <div>
-              <strong>{{ record.attendanceDate | date: 'EEE d MMM' : undefined : 'es-MX' }}</strong>
+              <strong>
+                {{
+                  formatLocalDate(record.attendanceDate, data.timeZone, {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short'
+                  })
+                }}
+              </strong>
               <small>
                 Entrada:
                 {{
                   record.checkInDate
-                    ? (record.checkInDate | date: 'h:mm a' : undefined : 'es-MX')
+                    ? formatUtcDateTime(record.checkInDate, data.timeZone, {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })
                     : 'Sin registro'
                 }}
               </small>
@@ -142,7 +171,15 @@
           <li *ngFor="let incident of data.recentIncidents">
             <div>
               <strong>{{ incident.incidentTypeName }}</strong>
-              <small>{{ incident.incidentDate | date: 'EEE d MMM' : undefined : 'es-MX' }}</small>
+              <small>
+                {{
+                  formatLocalDate(incident.incidentDate, data.timeZone, {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short'
+                  })
+                }}
+              </small>
             </div>
             <span>{{ incident.isApproved ? 'Aprobada' : 'Pendiente' }}</span>
           </li>
