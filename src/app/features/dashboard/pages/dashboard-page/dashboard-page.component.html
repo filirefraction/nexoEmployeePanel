@@ -1,0 +1,157 @@
+<section class="dashboard-page">
+  <article *ngIf="isLoading()" class="surface-card dashboard-page__hero">
+    <div class="section-copy">
+      <span class="pill-chip">Inicio</span>
+      <h1>Cargando tu resumen</h1>
+      <p>Estamos preparando la información del día, tu turno y tus movimientos recientes.</p>
+    </div>
+  </article>
+
+  <article *ngIf="errorMessage()" class="surface-card dashboard-page__hero dashboard-page__hero--error">
+    <div class="section-copy">
+      <span class="pill-chip">Inicio</span>
+      <h1>No fue posible cargar tu resumen</h1>
+      <p>{{ errorMessage() }}</p>
+    </div>
+
+    <button class="action-button action-button--secondary" type="button" (click)="dashboard.load()">
+      Reintentar
+    </button>
+  </article>
+
+  <ng-container *ngIf="summary() as data">
+    <article class="surface-card dashboard-page__hero">
+      <div class="section-copy">
+        <span class="pill-chip">Inicio</span>
+        <h1>{{ data.employee.fullName }}</h1>
+        <p>
+          {{ data.employee.jobPositionName || 'Puesto pendiente' }}
+          <span *ngIf="data.employee.branchName">· {{ data.employee.branchName }}</span>
+        </p>
+      </div>
+
+      <div class="dashboard-page__hero-meta">
+        <span
+          class="dashboard-page__status"
+          [class]="getAttendanceStatusTone(data.attendanceStatus)"
+        >
+          {{ getAttendanceStatusLabel(data.attendanceStatus) }}
+        </span>
+        <small>{{ data.localNow | date: 'EEEE d MMMM, h:mm a' : undefined : 'es-MX' }}</small>
+      </div>
+
+      <div class="dashboard-page__actions">
+        <button
+          class="action-button action-button--primary"
+          type="button"
+          [disabled]="!data.canCheckIn"
+        >
+          {{ data.canCheckIn ? 'Check-in disponible' : 'Check-in no disponible' }}
+        </button>
+        <button
+          class="action-button action-button--secondary"
+          type="button"
+          [disabled]="!data.canCheckOut"
+        >
+          {{ data.canCheckOut ? 'Check-out disponible' : 'Check-out no disponible' }}
+        </button>
+      </div>
+    </article>
+
+    <section class="dashboard-page__grid">
+      <article class="surface-card dashboard-page__card">
+        <span class="pill-chip">Turno de hoy</span>
+        <h2>{{ data.todayShift?.name || 'Sin turno asignado' }}</h2>
+        <p *ngIf="data.todayShift; else noShiftBlock">
+          {{ data.todayShift.scheduledStartLocal | date: 'h:mm a' : undefined : 'es-MX' }}
+          -
+          {{ data.todayShift.scheduledEndLocal | date: 'h:mm a' : undefined : 'es-MX' }}
+        </p>
+        <ng-template #noShiftBlock>
+          <p>No hay un turno activo para la fecha actual.</p>
+        </ng-template>
+      </article>
+
+      <article class="surface-card dashboard-page__card">
+        <span class="pill-chip">Vacaciones</span>
+        <h2>{{ data.vacationBalanceDays | number: '1.0-2' : 'es-MX' }} días</h2>
+        <p>{{ data.pendingVacationRequests }} solicitud(es) pendiente(s) de respuesta.</p>
+      </article>
+
+      <article class="surface-card dashboard-page__card">
+        <span class="pill-chip">Asistencia actual</span>
+        <h2>
+          {{
+            data.todayAttendance?.checkInDate
+              ? (data.todayAttendance?.checkInDate | date: 'h:mm a' : undefined : 'es-MX')
+              : 'Sin check-in'
+          }}
+        </h2>
+        <p>
+          {{ data.todayAttendance?.checkOutDate ? 'Check-out:' : 'Estatus:' }}
+          <strong *ngIf="data.todayAttendance?.checkOutDate; else statusOnly">
+            {{ data.todayAttendance?.checkOutDate | date: 'h:mm a' : undefined : 'es-MX' }}
+          </strong>
+        </p>
+        <ng-template #statusOnly>
+          {{ getAttendanceStatusLabel(data.attendanceStatus) }}
+        </ng-template>
+      </article>
+    </section>
+
+    <section class="dashboard-page__history">
+      <article class="surface-card dashboard-page__history-card">
+        <div class="dashboard-page__section-head">
+          <div class="section-copy">
+            <span class="pill-chip">Últimos movimientos</span>
+            <h2>Asistencias recientes</h2>
+          </div>
+        </div>
+
+        <ul *ngIf="data.latestAttendanceRecords.length; else emptyAttendance" class="dashboard-page__list">
+          <li *ngFor="let record of data.latestAttendanceRecords; trackBy: trackAttendance">
+            <div>
+              <strong>{{ record.attendanceDate | date: 'EEE d MMM' : undefined : 'es-MX' }}</strong>
+              <small>
+                Entrada:
+                {{
+                  record.checkInDate
+                    ? (record.checkInDate | date: 'h:mm a' : undefined : 'es-MX')
+                    : 'Sin registro'
+                }}
+              </small>
+            </div>
+            <span>{{ formatMinutes(record.workedMinutes) }}</span>
+          </li>
+        </ul>
+
+        <ng-template #emptyAttendance>
+          <p class="dashboard-page__empty">Todavía no hay asistencias recientes para mostrar.</p>
+        </ng-template>
+      </article>
+
+      <article class="surface-card dashboard-page__history-card">
+        <div class="dashboard-page__section-head">
+          <div class="section-copy">
+            <span class="pill-chip">Incidencias</span>
+            <h2>Seguimiento reciente</h2>
+          </div>
+        </div>
+
+        <ul *ngIf="data.recentIncidents.length; else emptyIncidents" class="dashboard-page__list">
+          <li *ngFor="let incident of data.recentIncidents">
+            <div>
+              <strong>{{ incident.incidentTypeName }}</strong>
+              <small>{{ incident.incidentDate | date: 'EEE d MMM' : undefined : 'es-MX' }}</small>
+            </div>
+            <span>{{ incident.isApproved ? 'Aprobada' : 'Pendiente' }}</span>
+          </li>
+        </ul>
+
+        <ng-template #emptyIncidents>
+          <p class="dashboard-page__empty">No hay incidencias recientes para este perfil.</p>
+        </ng-template>
+      </article>
+    </section>
+  </ng-container>
+</section>

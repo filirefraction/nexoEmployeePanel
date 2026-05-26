@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="Nexo Empleado">
+  <rect width="192" height="192" rx="40" fill="#12243d" />
+  <circle cx="96" cy="96" r="56" fill="#fcf9f4" />
+  <path d="M70 126V66h15l36 37V66h15v60h-14L85 88v38z" fill="#cf4e38" />
+</svg>

@@ -1,0 +1,38 @@
+<article class="surface-card login-page">
+  <div class="section-copy">
+    <span class="pill-chip">Empleado</span>
+    <h1>Acceso a Nexo</h1>
+    <p>
+      Inicia sesión con tu cuenta de colaborador para consultar asistencias, vacaciones y tu
+      información personal.
+    </p>
+  </div>
+
+  <form class="login-page__form" [formGroup]="loginForm" (ngSubmit)="submit()">
+    <p *ngIf="infoMessage" class="login-page__info">{{ infoMessage }}</p>
+
+    <div class="login-page__fields">
+      <label>
+        <span>Correo electrónico</span>
+        <input type="email" formControlName="email" placeholder="empleado@empresa.com" />
+        <small *ngIf="shouldShowFieldError('email')">Ingresa un correo electrónico válido.</small>
+      </label>
+
+      <label>
+        <span>Contraseña</span>
+        <input type="password" formControlName="password" placeholder="••••••••" />
+        <small *ngIf="shouldShowFieldError('password')">La contraseña es obligatoria.</small>
+      </label>
+    </div>
+
+    <p *ngIf="errorMessage()" class="login-page__error">{{ errorMessage() }}</p>
+
+    <button
+      class="action-button action-button--primary"
+      type="submit"
+      [disabled]="loginForm.invalid || isSubmitting()"
+    >
+      {{ isSubmitting() ? 'Iniciando...' : 'Iniciar sesión' }}
+    </button>
+  </form>
+</article>

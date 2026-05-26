@@ -1,0 +1,24 @@
+:host {
+  display: block;
+}
+
+.system-page {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  margin: 1rem;
+}
+
+.system-page h1 {
+  font-size: 1.8rem;
+}
+
+.system-page p {
+  color: var(--ne-slate);
+}
+
+.system-page__link {
+  display: inline-grid;
+  place-items: center;
+  text-decoration: none;
+}

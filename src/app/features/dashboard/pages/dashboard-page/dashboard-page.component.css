@@ -1,0 +1,137 @@
+:host {
+  display: block;
+}
+
+.dashboard-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboard-page__hero {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.25rem;
+}
+
+.dashboard-page__hero--error {
+  border: 1px solid rgba(207, 78, 56, 0.18);
+}
+
+.dashboard-page h1,
+.dashboard-page h2 {
+  margin: 0;
+}
+
+.dashboard-page h1 {
+  font-size: clamp(1.6rem, 6vw, 2.25rem);
+}
+
+.dashboard-page p,
+.dashboard-page small {
+  color: var(--ne-slate);
+}
+
+.dashboard-page__hero-meta {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.dashboard-page__status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.dashboard-page__status--success {
+  background: rgba(42, 125, 79, 0.14);
+  color: #1f6b42;
+}
+
+.dashboard-page__status--warning {
+  background: rgba(215, 146, 30, 0.16);
+  color: #9b5f0a;
+}
+
+.dashboard-page__status--danger {
+  background: rgba(207, 78, 56, 0.14);
+  color: var(--ne-accent);
+}
+
+.dashboard-page__status--neutral {
+  background: rgba(18, 36, 61, 0.09);
+  color: var(--ne-ink);
+}
+
+.dashboard-page__actions {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.dashboard-page__grid,
+.dashboard-page__history {
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboard-page__card,
+.dashboard-page__history-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.25rem;
+}
+
+.dashboard-page__section-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.dashboard-page__list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dashboard-page__list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--ne-line);
+}
+
+.dashboard-page__list li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.dashboard-page__list div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.dashboard-page__empty {
+  margin: 0;
+}
+
+@media (min-width: 760px) {
+  .dashboard-page__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dashboard-page__history {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-page__actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

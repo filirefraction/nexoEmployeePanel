@@ -1,0 +1,36 @@
+<div class="employee-shell page-shell">
+  <header class="employee-shell__header">
+    <div class="employee-shell__brand">
+      <span class="pill-chip">PWA</span>
+      <div class="section-copy">
+        <p>{{ appName }}</p>
+        <small>Portal del empleado</small>
+      </div>
+    </div>
+
+    <div class="employee-shell__session">
+      <div class="section-copy">
+        <p>{{ displayName() }}</p>
+        <small>{{ currentUser()?.email }}</small>
+      </div>
+
+      <button class="employee-shell__logout" type="button" (click)="logout()">Salir</button>
+    </div>
+  </header>
+
+  <main class="employee-shell__content">
+    <router-outlet />
+  </main>
+
+  <nav class="employee-shell__nav">
+    <a
+      *ngFor="let item of navItems"
+      class="employee-shell__nav-link"
+      [routerLink]="item.link"
+      routerLinkActive="employee-shell__nav-link--active"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      <span>{{ item.label }}</span>
+    </a>
+  </nav>
+</div>

@@ -1,0 +1,131 @@
+<section class="attendance-page">
+  <article class="surface-card attendance-page__hero">
+    <div class="section-copy">
+      <span class="pill-chip">Asistencia</span>
+      <h1>Tu jornada</h1>
+      <p>
+        Registra tu entrada o salida y consulta tu historial reciente de asistencia desde un solo
+        lugar.
+      </p>
+    </div>
+
+    <div class="attendance-page__actions">
+      <button
+        class="action-button action-button--primary"
+        type="button"
+        [disabled]="isActionInFlight()"
+        (click)="submitCheckIn()"
+      >
+        {{ isActionInFlight() ? 'Procesando...' : 'Registrar check-in' }}
+      </button>
+      <button
+        class="action-button action-button--secondary"
+        type="button"
+        [disabled]="isActionInFlight()"
+        (click)="submitCheckOut()"
+      >
+        {{ isActionInFlight() ? 'Procesando...' : 'Registrar check-out' }}
+      </button>
+    </div>
+
+    <p *ngIf="successMessage()" class="attendance-page__alert attendance-page__alert--success">
+      {{ successMessage() }}
+    </p>
+    <p *ngIf="errorMessage()" class="attendance-page__alert attendance-page__alert--error">
+      {{ errorMessage() }}
+    </p>
+  </article>
+
+  <article class="surface-card attendance-page__history-card">
+    <div class="attendance-page__section-head">
+      <div class="section-copy">
+        <span class="pill-chip">Historial</span>
+        <h2>Movimientos recientes</h2>
+      </div>
+    </div>
+
+    <form class="attendance-page__filters" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+      <label>
+        <span>Desde</span>
+        <input type="date" formControlName="fromDate" />
+      </label>
+
+      <label>
+        <span>Hasta</span>
+        <input type="date" formControlName="toDate" />
+      </label>
+
+      <label>
+        <span>Tipo</span>
+        <select formControlName="isManual">
+          <option value="">Todos</option>
+          <option value="false">Automáticos</option>
+          <option value="true">Manuales</option>
+        </select>
+      </label>
+
+      <div class="attendance-page__filter-actions">
+        <button class="action-button action-button--secondary" type="button" (click)="resetFilters()">
+          Limpiar
+        </button>
+        <button class="action-button action-button--primary" type="submit">Aplicar</button>
+      </div>
+    </form>
+
+    <div *ngIf="isLoading()" class="attendance-page__empty">
+      Estamos cargando tu historial de asistencia.
+    </div>
+
+    <div *ngIf="!isLoading() && !records().length" class="attendance-page__empty">
+      Todavía no hay registros de asistencia para los filtros seleccionados.
+    </div>
+
+    <ul *ngIf="!isLoading() && records().length" class="attendance-page__list">
+      <li *ngFor="let record of records()">
+        <div>
+          <strong>{{ record.attendanceDate | date: 'EEEE d MMMM' : undefined : 'es-MX' }}</strong>
+          <small>
+            Entrada:
+            {{
+              record.checkInDate
+                ? (record.checkInDate | date: 'h:mm a' : undefined : 'es-MX')
+                : 'Sin registro'
+            }}
+            · Salida:
+            {{
+              record.checkOutDate
+                ? (record.checkOutDate | date: 'h:mm a' : undefined : 'es-MX')
+                : 'Pendiente'
+            }}
+          </small>
+        </div>
+
+        <div class="attendance-page__metrics">
+          <span>{{ formatMinutes(record.workedMinutes) }}</span>
+          <small *ngIf="record.isLate">Retardo: {{ record.lateMinutes }} min</small>
+          <small *ngIf="record.isManual">Manual</small>
+        </div>
+      </li>
+    </ul>
+
+    <div *ngIf="pagination() as page" class="attendance-page__pagination">
+      <button
+        class="action-button action-button--secondary"
+        type="button"
+        [disabled]="!page.hasPreviousPage"
+        (click)="goToPage(page.pageNumber - 1)"
+      >
+        Anterior
+      </button>
+      <span>Página {{ page.pageNumber }} de {{ page.totalPages }}</span>
+      <button
+        class="action-button action-button--secondary"
+        type="button"
+        [disabled]="!page.hasNextPage"
+        (click)="goToPage(page.pageNumber + 1)"
+      >
+        Siguiente
+      </button>
+    </div>
+  </article>
+</section>

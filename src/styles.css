@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --ne-sand: #f7f1e3;
+  --ne-cream: #fffaf0;
+  --ne-ink: #112031;
+  --ne-slate: #3b4a5a;
+  --ne-line: rgba(17, 32, 49, 0.12);
+  --ne-brand: #0f766e;
+  --ne-brand-strong: #115e59;
+  --ne-brand-soft: rgba(15, 118, 110, 0.1);
+  --ne-danger: #b42318;
+  --ne-warning: #b54708;
+  --ne-success: #067647;
+  --ne-surface: rgba(255, 255, 255, 0.86);
+  --ne-shadow: 0 20px 50px rgba(17, 32, 49, 0.1);
+  font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 28%),
+    linear-gradient(180deg, #fffef8 0%, var(--ne-sand) 100%);
+  color: var(--ne-ink);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: transparent;
+  color: var(--ne-ink);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+.page-shell {
+  min-height: 100dvh;
+}
+
+.surface-card {
+  border: 1px solid var(--ne-line);
+  border-radius: 24px;
+  background: var(--ne-surface);
+  box-shadow: var(--ne-shadow);
+  backdrop-filter: blur(14px);
+}
+
+.pill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  background: var(--ne-brand-soft);
+  color: var(--ne-brand-strong);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.action-button {
+  min-height: 3rem;
+  border: 0;
+  border-radius: 16px;
+  padding: 0.8rem 1rem;
+  font-weight: 700;
+}
+
+.action-button--primary {
+  background: linear-gradient(135deg, var(--ne-brand), var(--ne-brand-strong));
+  color: #fff;
+}
+
+.action-button--secondary {
+  background: rgba(17, 32, 49, 0.06);
+  color: var(--ne-ink);
+}
+
+.section-copy {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.section-copy h1,
+.section-copy h2,
+.section-copy h3,
+.section-copy p {
+  margin: 0;
+}
+
+@media (max-width: 767px) {
+  body {
+    font-size: 15px;
+  }
+}

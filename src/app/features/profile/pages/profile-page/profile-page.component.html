@@ -1,0 +1,84 @@
+<section class="profile-page">
+  <article *ngIf="isLoading()" class="surface-card profile-page__card">
+    <div class="section-copy">
+      <span class="pill-chip">Perfil</span>
+      <h1>Cargando tu perfil</h1>
+      <p>Estamos preparando tus datos laborales y de contacto.</p>
+    </div>
+  </article>
+
+  <article *ngIf="errorMessage()" class="surface-card profile-page__card profile-page__card--error">
+    <div class="section-copy">
+      <span class="pill-chip">Perfil</span>
+      <h1>No fue posible cargar tu perfil</h1>
+      <p>{{ errorMessage() }}</p>
+    </div>
+
+    <button class="action-button action-button--secondary" type="button" (click)="dashboard.load()">
+      Reintentar
+    </button>
+  </article>
+
+  <ng-container *ngIf="summary() as data">
+    <article class="surface-card profile-page__card">
+      <div class="section-copy">
+        <span class="pill-chip">Perfil</span>
+        <h1>{{ data.employee.fullName }}</h1>
+        <p>{{ data.employee.jobPositionName || 'Puesto pendiente' }}</p>
+      </div>
+
+      <div class="profile-page__grid">
+        <div>
+          <strong>Número de empleado</strong>
+          <p>{{ data.employee.employeeNumber || 'No capturado' }}</p>
+        </div>
+
+        <div>
+          <strong>Correo</strong>
+          <p>{{ data.employee.email || 'No capturado' }}</p>
+        </div>
+
+        <div>
+          <strong>Sucursal</strong>
+          <p>{{ data.employee.branchName || 'No asignada' }}</p>
+        </div>
+
+        <div>
+          <strong>Departamento</strong>
+          <p>{{ data.employee.departmentName || 'No asignado' }}</p>
+        </div>
+
+        <div>
+          <strong>Puesto</strong>
+          <p>{{ data.employee.jobPositionName || 'No asignado' }}</p>
+        </div>
+
+        <div>
+          <strong>Zona horaria</strong>
+          <p>{{ data.timeZone }}</p>
+        </div>
+
+        <div>
+          <strong>Asistencia requerida</strong>
+          <p>{{ data.employee.isAttendanceRequired ? 'Sí' : 'No' }}</p>
+        </div>
+
+        <div>
+          <strong>Trabajo remoto</strong>
+          <p>{{ data.employee.isRemoteAllowed ? 'Permitido' : 'No permitido' }}</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="surface-card profile-page__card">
+      <div class="section-copy">
+        <span class="pill-chip">Edición</span>
+        <h2>Perfil en modo lectura</h2>
+        <p>
+          Este portal todavía no expone edición directa de perfil porque el backend actual no
+          publica un endpoint específico para actualizar datos del empleado desde el canal personal.
+        </p>
+      </div>
+    </article>
+  </ng-container>
+</section>

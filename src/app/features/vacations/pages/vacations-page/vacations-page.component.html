@@ -1,0 +1,176 @@
+<section class="vacations-page">
+  <article class="surface-card vacations-page__request-card">
+    <div class="section-copy">
+      <span class="pill-chip">Vacaciones</span>
+      <h1>Nueva solicitud</h1>
+      <p>Solicita tus días y consulta el estado de tus peticiones desde esta misma pantalla.</p>
+    </div>
+
+    <form class="vacations-page__form" [formGroup]="requestForm" (ngSubmit)="submitRequest()">
+      <label>
+        <span>Desde</span>
+        <input type="date" formControlName="fromDate" />
+      </label>
+
+      <label>
+        <span>Hasta</span>
+        <input type="date" formControlName="toDate" />
+      </label>
+
+      <label class="vacations-page__reason">
+        <span>Motivo</span>
+        <textarea formControlName="reason" rows="4" placeholder="Opcional"></textarea>
+      </label>
+
+      <button
+        class="action-button action-button--primary"
+        type="submit"
+        [disabled]="requestForm.invalid || isActionInFlight()"
+      >
+        {{ isActionInFlight() ? 'Enviando...' : 'Enviar solicitud' }}
+      </button>
+    </form>
+
+    <p *ngIf="successMessage()" class="vacations-page__alert vacations-page__alert--success">
+      {{ successMessage() }}
+    </p>
+    <p *ngIf="errorMessage()" class="vacations-page__alert vacations-page__alert--error">
+      {{ errorMessage() }}
+    </p>
+  </article>
+
+  <article class="surface-card vacations-page__history-card">
+    <div class="vacations-page__section-head">
+      <div class="section-copy">
+        <span class="pill-chip">Historial</span>
+        <h2>Solicitudes recientes</h2>
+      </div>
+    </div>
+
+    <form class="vacations-page__filters" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+      <label>
+        <span>Desde</span>
+        <input type="date" formControlName="fromDate" />
+      </label>
+
+      <label>
+        <span>Hasta</span>
+        <input type="date" formControlName="toDate" />
+      </label>
+
+      <div class="vacations-page__filter-actions">
+        <button class="action-button action-button--secondary" type="button" (click)="resetFilters()">
+          Limpiar
+        </button>
+        <button class="action-button action-button--primary" type="submit">Aplicar</button>
+      </div>
+    </form>
+
+    <div *ngIf="isLoading()" class="vacations-page__empty">
+      Estamos cargando tus solicitudes de vacaciones.
+    </div>
+
+    <div *ngIf="!isLoading() && !requests().length" class="vacations-page__empty">
+      Todavía no hay solicitudes para los filtros seleccionados.
+    </div>
+
+    <ul *ngIf="!isLoading() && requests().length" class="vacations-page__list">
+      <li *ngFor="let request of requests()">
+        <button type="button" class="vacations-page__row" (click)="viewRequest(request.id)">
+          <div>
+            <strong>
+              {{ request.fromDate | date: 'd MMM' : undefined : 'es-MX' }}
+              -
+              {{ request.toDate | date: 'd MMM y' : undefined : 'es-MX' }}
+            </strong>
+            <small>
+              {{ request.requestedDays | number: '1.0-2' : 'es-MX' }} día(s) ·
+              {{ request.requestedDate | date: 'd MMM y, h:mm a' : undefined : 'es-MX' }}
+            </small>
+          </div>
+          <span class="vacations-page__status" [class]="getStatusTone(request)">
+            {{ getStatusLabel(request) }}
+          </span>
+        </button>
+      </li>
+    </ul>
+
+    <div *ngIf="pagination() as page" class="vacations-page__pagination">
+      <button
+        class="action-button action-button--secondary"
+        type="button"
+        [disabled]="!page.hasPreviousPage"
+        (click)="goToPage(page.pageNumber - 1)"
+      >
+        Anterior
+      </button>
+      <span>Página {{ page.pageNumber }} de {{ page.totalPages }}</span>
+      <button
+        class="action-button action-button--secondary"
+        type="button"
+        [disabled]="!page.hasNextPage"
+        (click)="goToPage(page.pageNumber + 1)"
+      >
+        Siguiente
+      </button>
+    </div>
+  </article>
+
+  <article *ngIf="selectedRequest() as detail" class="surface-card vacations-page__detail-card">
+    <div class="vacations-page__section-head">
+      <div class="section-copy">
+        <span class="pill-chip">Detalle</span>
+        <h2>Solicitud seleccionada</h2>
+      </div>
+
+      <button class="action-button action-button--secondary" type="button" (click)="closeDetail()">
+        Cerrar
+      </button>
+    </div>
+
+    <div *ngIf="isDetailLoading()" class="vacations-page__empty">
+      Estamos cargando el detalle de la solicitud.
+    </div>
+
+    <div *ngIf="!isDetailLoading()" class="vacations-page__detail-grid">
+      <div>
+        <strong>Rango solicitado</strong>
+        <p>
+          {{ detail.fromDate | date: 'fullDate' : undefined : 'es-MX' }}
+          <br />
+          {{ detail.toDate | date: 'fullDate' : undefined : 'es-MX' }}
+        </p>
+      </div>
+
+      <div>
+        <strong>Días solicitados</strong>
+        <p>{{ detail.requestedDays | number: '1.0-2' : 'es-MX' }}</p>
+      </div>
+
+      <div>
+        <strong>Estatus</strong>
+        <p>{{ getStatusLabel(detail) }}</p>
+      </div>
+
+      <div>
+        <strong>Motivo</strong>
+        <p>{{ detail.reason || 'Sin motivo capturado.' }}</p>
+      </div>
+
+      <div *ngIf="detail.rejectedReason">
+        <strong>Motivo de rechazo</strong>
+        <p>{{ detail.rejectedReason }}</p>
+      </div>
+    </div>
+
+    <button
+      *ngIf="!isDetailLoading() && canCancel(detail)"
+      class="action-button action-button--secondary"
+      type="button"
+      [disabled]="isActionInFlight()"
+      (click)="cancelSelected()"
+    >
+      {{ isActionInFlight() ? 'Procesando...' : 'Cancelar solicitud' }}
+    </button>
+  </article>
+</section>

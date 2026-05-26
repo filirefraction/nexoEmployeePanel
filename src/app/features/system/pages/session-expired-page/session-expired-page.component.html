@@ -1,0 +1,18 @@
+<section class="system-page surface-card">
+  <div class="section-copy">
+    <span class="pill-chip">401</span>
+    <h1>Sesión terminada</h1>
+    <p>
+      Tu sesión ya no es válida o venció. Inicia sesión otra vez para continuar usando el portal
+      del empleado.
+    </p>
+  </div>
+
+  <a
+    class="action-button action-button--primary system-page__link"
+    routerLink="/login"
+    [queryParams]="{ reason: 'session-expired' }"
+  >
+    Volver a iniciar sesión
+  </a>
+</section>

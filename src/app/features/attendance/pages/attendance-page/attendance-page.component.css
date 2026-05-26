@@ -1,0 +1,117 @@
+:host {
+  display: block;
+}
+
+.attendance-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.attendance-page__hero,
+.attendance-page__history-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.attendance-page__actions,
+.attendance-page__filter-actions {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.attendance-page__alert {
+  margin: 0;
+  border-radius: 16px;
+  padding: 0.85rem 1rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.attendance-page__alert--success {
+  background: rgba(42, 125, 79, 0.12);
+  color: #1f6b42;
+}
+
+.attendance-page__alert--error {
+  background: rgba(207, 78, 56, 0.1);
+  color: var(--ne-accent);
+}
+
+.attendance-page__filters {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.attendance-page__filters label {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.attendance-page__filters span {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.attendance-page__filters input,
+.attendance-page__filters select {
+  min-height: 3rem;
+  border: 1px solid var(--ne-line);
+  border-radius: 16px;
+  padding: 0.75rem 0.9rem;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.attendance-page__list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attendance-page__list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.95rem 0;
+  border-top: 1px solid var(--ne-line);
+}
+
+.attendance-page__list li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.attendance-page__list div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.attendance-page__metrics {
+  justify-items: end;
+}
+
+.attendance-page__empty {
+  color: var(--ne-slate);
+}
+
+.attendance-page__pagination {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+@media (min-width: 760px) {
+  .attendance-page__actions,
+  .attendance-page__filter-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .attendance-page__filters {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: end;
+  }
+}
