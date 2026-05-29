@@ -15,6 +15,7 @@ import {
 } from 'rxjs';
 import { AuthApiService } from '../auth/auth-api.service';
 import { AuthLoginRequest } from '../auth/models/auth-login-request.model';
+import { AuthLoginResponse } from '../auth/models/auth-login-response.model';
 import { AuthTokenResponse } from '../auth/models/auth-token-response.model';
 import { CurrentUser } from '../auth/models/current-user.model';
 import { AuthTokenStoreService } from './auth-token-store.service';
@@ -55,10 +56,14 @@ export class CurrentSessionService {
     }
   }
 
-  login(request: AuthLoginRequest): Observable<CurrentUser> {
+  login(request: AuthLoginRequest): Observable<AuthLoginResponse> {
     return this.authApi.login(request).pipe(
-      tap((response) => this.establishSession(response.data)),
-      map((response) => response.data.user)
+      tap((response) => {
+        if (this.hasSessionPayload(response.data)) {
+          this.establishSession(response.data as AuthTokenResponse);
+        }
+      }),
+      map((response) => response.data)
     );
   }
 
@@ -174,6 +179,16 @@ export class CurrentSessionService {
     }
 
     this.currentUserState.set(session.user);
+  }
+
+  private hasSessionPayload(session: AuthLoginResponse): boolean {
+    return Boolean(
+      session.accessToken &&
+        session.refreshToken &&
+        session.accessTokenExpiresAtUtc &&
+        session.refreshTokenExpiresAtUtc &&
+        session.user
+    );
   }
 
   private clearSession(): void {

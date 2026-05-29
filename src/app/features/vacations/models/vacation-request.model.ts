@@ -41,6 +41,27 @@ export interface VacationRequestFilter {
 
 export interface VacationRequestCreateRequest {
   readonly fromDate: string;
-  readonly toDate: string;
+  readonly requestedDays: number;
   readonly reason?: string | null;
+}
+
+export interface VacationRequestPreviewRequest {
+  readonly fromDate: string;
+  readonly requestedDays: number;
+}
+
+export interface VacationRequestPreviewDay {
+  readonly date: string;
+  readonly dayOfWeek: string;
+  readonly countsAsVacationDay: boolean;
+  readonly description: string;
+}
+
+export interface VacationRequestPreview {
+  readonly fromDate: string;
+  readonly toDate: string;
+  readonly requestedDays: number;
+  readonly countedVacationDays: number;
+  readonly returnToWorkDate: string;
+  readonly days: readonly VacationRequestPreviewDay[];
 }

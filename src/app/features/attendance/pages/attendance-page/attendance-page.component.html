@@ -13,7 +13,7 @@
       <button
         class="action-button action-button--primary"
         type="button"
-        [disabled]="isActionInFlight()"
+        [disabled]="isActionInFlight() || !canCheckIn()"
         (click)="submitCheckIn()"
       >
         {{ isActionInFlight() ? 'Procesando...' : 'Registrar check-in' }}
@@ -21,11 +21,16 @@
       <button
         class="action-button action-button--secondary"
         type="button"
-        [disabled]="isActionInFlight()"
+        [disabled]="isActionInFlight() || !canCheckOut()"
         (click)="submitCheckOut()"
       >
         {{ isActionInFlight() ? 'Procesando...' : 'Registrar check-out' }}
       </button>
+    </div>
+
+    <div class="attendance-page__status">
+      <strong>{{ attendanceStatusLabel() }}</strong>
+      <p>{{ attendanceActionHint() }}</p>
     </div>
 
     <p *ngIf="successMessage()" class="attendance-page__alert attendance-page__alert--success">

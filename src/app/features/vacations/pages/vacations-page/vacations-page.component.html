@@ -13,8 +13,8 @@
       </label>
 
       <label>
-        <span>Hasta</span>
-        <input type="date" formControlName="toDate" />
+        <span>Días solicitados</span>
+        <input type="number" min="1" step="1" formControlName="requestedDays" />
       </label>
 
       <label class="vacations-page__reason">
@@ -22,14 +22,69 @@
         <textarea formControlName="reason" rows="4" placeholder="Opcional"></textarea>
       </label>
 
-      <button
-        class="action-button action-button--primary"
-        type="submit"
-        [disabled]="requestForm.invalid || isActionInFlight()"
-      >
-        {{ isActionInFlight() ? 'Enviando...' : 'Enviar solicitud' }}
-      </button>
+      <div class="vacations-page__request-actions">
+        <button
+          class="action-button action-button--secondary"
+          type="button"
+          [disabled]="requestForm.invalid || isPreviewLoading()"
+          (click)="calculatePreview()"
+        >
+          {{ isPreviewLoading() ? 'Calculando...' : 'Calcular vista previa' }}
+        </button>
+        <button
+          class="action-button action-button--primary"
+          type="submit"
+          [disabled]="requestForm.invalid || isActionInFlight() || !preview()"
+        >
+          {{ isActionInFlight() ? 'Enviando...' : 'Enviar solicitud' }}
+        </button>
+      </div>
     </form>
+
+    <article *ngIf="preview() as vacationPreview" class="vacations-page__preview">
+      <div class="vacations-page__preview-summary">
+        <div>
+          <strong>Periodo calculado</strong>
+          <p>
+            {{ vacationPreview.fromDate | date: 'fullDate' : undefined : 'es-MX' }}<br />
+            {{ vacationPreview.toDate | date: 'fullDate' : undefined : 'es-MX' }}
+          </p>
+        </div>
+        <div>
+          <strong>Días contados</strong>
+          <p>{{ vacationPreview.countedVacationDays }} de {{ vacationPreview.requestedDays }}</p>
+        </div>
+        <div>
+          <strong>Regreso estimado</strong>
+          <p>{{ vacationPreview.returnToWorkDate | date: 'fullDate' : undefined : 'es-MX' }}</p>
+        </div>
+      </div>
+
+      <ul class="vacations-page__preview-days">
+        <li *ngFor="let day of vacationPreview.days">
+          <div>
+            <strong>
+              {{ day.date | date: 'EEE d MMM y' : undefined : 'es-MX' }}
+            </strong>
+            <small>{{ resolvePreviewDayLabel(day) }}</small>
+          </div>
+          <div class="vacations-page__preview-meta">
+            <span
+              class="vacations-page__status"
+              [class]="day.countsAsVacationDay ? 'vacations-page__status--success' : 'vacations-page__status--muted'"
+            >
+              {{ day.countsAsVacationDay ? 'Cuenta' : 'No cuenta' }}
+            </span>
+            <small>{{ day.description }}</small>
+          </div>
+        </li>
+      </ul>
+
+      <p class="vacations-page__preview-note">
+        El backend recalculará estas fechas al guardar la solicitud para evitar cambios manuales
+        desde la interfaz.
+      </p>
+    </article>
 
     <p *ngIf="successMessage()" class="vacations-page__alert vacations-page__alert--success">
       {{ successMessage() }}

@@ -7,7 +7,9 @@ import {
   VacationRequest,
   VacationRequestCreateRequest,
   VacationRequestFilter,
-  VacationRequestListItem
+  VacationRequestListItem,
+  VacationRequestPreview,
+  VacationRequestPreviewRequest
 } from '../models/vacation-request.model';
 
 const DEFAULT_FILTER: VacationRequestFilter = {
@@ -31,8 +33,10 @@ export class EmployeeVacationRequestsFacade {
   private readonly loadingState = signal(false);
   private readonly detailLoadingState = signal(false);
   private readonly actionState = signal(false);
+  private readonly previewLoadingState = signal(false);
   private readonly errorState = signal<string | null>(null);
   private readonly successState = signal<string | null>(null);
+  private readonly previewState = signal<VacationRequestPreview | null>(null);
 
   readonly requests = computed(() => this.requestsState());
   readonly selectedRequest = computed(() => this.selectedRequestState());
@@ -41,8 +45,10 @@ export class EmployeeVacationRequestsFacade {
   readonly isLoading = computed(() => this.loadingState());
   readonly isDetailLoading = computed(() => this.detailLoadingState());
   readonly isActionInFlight = computed(() => this.actionState());
+  readonly isPreviewLoading = computed(() => this.previewLoadingState());
   readonly errorMessage = computed(() => this.errorState());
   readonly successMessage = computed(() => this.successState());
+  readonly preview = computed(() => this.previewState());
 
   load(filterPatch?: Partial<VacationRequestFilter>): void {
     const nextFilter = {
@@ -104,6 +110,7 @@ export class EmployeeVacationRequestsFacade {
       .subscribe({
         next: (response) => {
           this.selectedRequestState.set(response.data);
+          this.previewState.set(null);
           this.successState.set('Solicitud enviada correctamente.');
           this.load({ pageNumber: 1 });
         },
@@ -143,5 +150,34 @@ export class EmployeeVacationRequestsFacade {
 
   clearSelection(): void {
     this.selectedRequestState.set(null);
+  }
+
+  previewRequest(request: VacationRequestPreviewRequest): void {
+    if (this.previewLoadingState()) {
+      return;
+    }
+
+    this.previewLoadingState.set(true);
+    this.errorState.set(null);
+    this.successState.set(null);
+
+    this.api
+      .preview(request)
+      .pipe(finalize(() => this.previewLoadingState.set(false)))
+      .subscribe({
+        next: (response) => {
+          this.previewState.set(response.data);
+        },
+        error: (error: unknown) => {
+          this.previewState.set(null);
+          this.errorState.set(
+            this.apiError.getDisplayMessage(error, 'No fue posible calcular la vista previa de vacaciones.')
+          );
+        }
+      });
+  }
+
+  clearPreview(): void {
+    this.previewState.set(null);
   }
 }

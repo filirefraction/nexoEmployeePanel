@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../shared/models/api-response.model';
 import { AuthLoginRequest } from './models/auth-login-request.model';
+import { AuthLoginResponse } from './models/auth-login-response.model';
 import { AuthRefreshRequest } from './models/auth-refresh-request.model';
 import { AuthTokenResponse } from './models/auth-token-response.model';
 import { CurrentUser } from './models/current-user.model';
@@ -15,8 +16,8 @@ export class AuthApiService {
   private readonly http = inject(HttpClient);
   private readonly resource = `${environment.apiBaseUrl}/api/auth/v1/auth`;
 
-  login(request: AuthLoginRequest): Observable<ApiResponse<AuthTokenResponse>> {
-    return this.http.post<ApiResponse<AuthTokenResponse>>(`${this.resource}/login`, request);
+  login(request: AuthLoginRequest): Observable<ApiResponse<AuthLoginResponse>> {
+    return this.http.post<ApiResponse<AuthLoginResponse>>(`${this.resource}/login`, request);
   }
 
   refresh(request: AuthRefreshRequest): Observable<ApiResponse<AuthTokenResponse>> {

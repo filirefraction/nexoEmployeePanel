@@ -43,6 +43,44 @@ export class EmployeeAttendanceFacade {
   readonly errorMessage = computed(() => this.errorState());
   readonly successMessage = computed(() => this.successState());
   readonly latestActionRecord = computed(() => this.latestActionRecordState());
+  readonly latestKnownRecord = computed(() => this.buildLatestKnownRecord());
+  readonly canCheckIn = computed(() => {
+    const latestRecord = this.latestKnownRecord();
+
+    if (!latestRecord) {
+      return true;
+    }
+
+    return !latestRecord.hasCheckIn || latestRecord.hasCheckOut;
+  });
+  readonly canCheckOut = computed(() => {
+    const latestRecord = this.latestKnownRecord();
+    return !!latestRecord?.hasCheckIn && !latestRecord.hasCheckOut;
+  });
+  readonly attendanceStatusLabel = computed(() => {
+    const latestRecord = this.latestKnownRecord();
+
+    if (!latestRecord) {
+      return 'Sin jornada abierta';
+    }
+
+    if (latestRecord.hasCheckIn && !latestRecord.hasCheckOut) {
+      return 'Jornada abierta';
+    }
+
+    return 'Jornada cerrada';
+  });
+  readonly attendanceActionHint = computed(() => {
+    if (this.canCheckOut()) {
+      return 'Ya tienes una entrada abierta. El siguiente movimiento valido es registrar tu check-out.';
+    }
+
+    if (this.canCheckIn()) {
+      return 'Puedes registrar tu check-in. La API valida automaticamente el dia operativo y evita duplicados.';
+    }
+
+    return 'Ya registraste tus movimientos disponibles para el dia operativo actual.';
+  });
 
   load(filterPatch?: Partial<AttendanceRecordFilter>): void {
     const nextFilter = {
@@ -109,5 +147,25 @@ export class EmployeeAttendanceFacade {
           );
         }
       });
+  }
+
+  private buildLatestKnownRecord(): AttendanceRecord | null {
+    const latestActionRecord = this.latestActionRecordState();
+
+    if (latestActionRecord) {
+      return latestActionRecord;
+    }
+
+    const latestListedRecord = this.recordsState()[0];
+
+    if (!latestListedRecord) {
+      return null;
+    }
+
+    return {
+      ...latestListedRecord,
+      hasCheckIn: !!latestListedRecord.checkInDate,
+      hasCheckOut: !!latestListedRecord.checkOutDate
+    };
   }
 }

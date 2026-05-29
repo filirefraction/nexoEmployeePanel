@@ -3,8 +3,8 @@
     <span class="pill-chip">Empleado</span>
     <h1>Acceso a Nexo</h1>
     <p>
-      Inicia sesión con tu cuenta de colaborador para consultar asistencias, vacaciones y tu
-      información personal.
+      Inicia sesion con tu cuenta de colaborador para consultar asistencias, vacaciones y tu
+      informacion personal.
     </p>
   </div>
 
@@ -13,15 +13,26 @@
 
     <div class="login-page__fields">
       <label>
-        <span>Correo electrónico</span>
+        <span>Correo electronico</span>
         <input type="email" formControlName="email" placeholder="empleado@empresa.com" />
-        <small *ngIf="shouldShowFieldError('email')">Ingresa un correo electrónico válido.</small>
+        <small *ngIf="shouldShowFieldError('email')">Ingresa un correo electronico valido.</small>
       </label>
 
       <label>
-        <span>Contraseña</span>
-        <input type="password" formControlName="password" placeholder="••••••••" />
-        <small *ngIf="shouldShowFieldError('password')">La contraseña es obligatoria.</small>
+        <span>Contrasena</span>
+        <input type="password" formControlName="password" placeholder="********" />
+        <small *ngIf="shouldShowFieldError('password')">La contrasena es obligatoria.</small>
+      </label>
+
+      <label *ngIf="requiresCompanySelection()">
+        <span>Empresa</span>
+        <select formControlName="companyIdHint">
+          <option value="">Selecciona una empresa</option>
+          <option *ngFor="let company of companyOptions()" [value]="company.companyId">
+            {{ company.tradeName || company.name }}
+          </option>
+        </select>
+        <small>Selecciona la empresa correcta para completar el acceso.</small>
       </label>
     </div>
 
@@ -32,7 +43,7 @@
       type="submit"
       [disabled]="loginForm.invalid || isSubmitting()"
     >
-      {{ isSubmitting() ? 'Iniciando...' : 'Iniciar sesión' }}
+      {{ isSubmitting() ? 'Iniciando...' : 'Iniciar sesion' }}
     </button>
   </form>
 </article>

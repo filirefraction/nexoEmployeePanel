@@ -76,6 +76,12 @@ export class ApiErrorService {
     const translations: Record<string, string> = {
       'Invalid email or password.': 'Correo o contrasena incorrectos.',
       'Validation error.': 'Error de validacion.',
+      'Ya existe un check-in abierto para el empleado actual.':
+        'Ya tienes una jornada abierta. Debes registrar tu check-out antes de volver a iniciar.',
+      'Ya existe un check-in registrado para el día actual.':
+        'Ya registraste tu check-in para el dia operativo actual.',
+      'Ya existe un check-out registrado para el día actual.':
+        'Ya registraste tu check-out para el dia operativo actual.',
       'Only pending vacation requests can perform this action.':
         'Solo las solicitudes pendientes pueden realizar esta accion.',
       'The authenticated user is not linked to an active employee.':
@@ -84,6 +90,8 @@ export class ApiErrorService {
         'Tu cuenta no esta vinculada a un empleado valido para este portal.',
       'No open attendance record was found for the current employee.':
         'No se encontro una asistencia abierta para el empleado actual.',
+      'No se encontró un check-in abierto para el empleado actual.':
+        'No tienes una jornada abierta para registrar salida.',
       'Attendance is not required for this employee.':
         'La asistencia no es obligatoria para este empleado.',
       'The employee already has an open attendance record.':

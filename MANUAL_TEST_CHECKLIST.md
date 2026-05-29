@@ -19,6 +19,7 @@ Validar funcionalmente `nexoEmployeePanel` contra `nexoApi`.
 - abrir `/login`
 - capturar credenciales validas
 - verificar redireccion a `/app/inicio`
+- si el correo existe en mas de una company, seleccionar la empresa antes de continuar
 
 Esperado:
 
@@ -108,6 +109,7 @@ Nota:
 - probar `check-out`
 - aplicar filtros por fecha
 - navegar entre paginas si hay mas de una
+- confirmar que la pantalla deshabilite la accion opuesta cuando ya exista jornada abierta o cerrada
 
 Esperado:
 
@@ -128,6 +130,7 @@ Nota:
 
 - abrir `/app/vacaciones`
 - crear una solicitud nueva
+- calcular vista previa antes de enviar
 - consultar detalle
 - cancelar una solicitud pendiente
 - aplicar filtros por fecha
@@ -135,6 +138,10 @@ Nota:
 Esperado:
 
 - creacion correcta
+- preview correcto con:
+  - periodo calculado
+  - dias que cuentan y no cuentan
+  - fecha estimada de regreso
 - detalle correcto
 - cancelacion solo en solicitudes pendientes
 - mensajes claros de negocio

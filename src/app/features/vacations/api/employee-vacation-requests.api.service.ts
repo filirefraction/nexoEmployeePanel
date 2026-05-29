@@ -7,7 +7,9 @@ import {
   VacationRequest,
   VacationRequestCreateRequest,
   VacationRequestFilter,
-  VacationRequestListItem
+  VacationRequestListItem,
+  VacationRequestPreview,
+  VacationRequestPreviewRequest
 } from '../models/vacation-request.model';
 
 @Injectable({
@@ -35,6 +37,10 @@ export class EmployeeVacationRequestsApiService {
 
   getById(id: string): Observable<ApiResponse<VacationRequest>> {
     return this.http.get<ApiResponse<VacationRequest>>(`${this.resource}/${id}`);
+  }
+
+  preview(request: VacationRequestPreviewRequest): Observable<ApiResponse<VacationRequestPreview>> {
+    return this.http.post<ApiResponse<VacationRequestPreview>>(`${this.resource}/preview`, request);
   }
 
   create(request: VacationRequestCreateRequest): Observable<ApiResponse<VacationRequest>> {

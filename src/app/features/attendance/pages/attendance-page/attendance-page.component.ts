@@ -32,6 +32,10 @@ export class AttendancePageComponent {
   protected readonly errorMessage = this.attendance.errorMessage;
   protected readonly successMessage = this.attendance.successMessage;
   protected readonly latestActionRecord = this.attendance.latestActionRecord;
+  protected readonly canCheckIn = this.attendance.canCheckIn;
+  protected readonly canCheckOut = this.attendance.canCheckOut;
+  protected readonly attendanceStatusLabel = this.attendance.attendanceStatusLabel;
+  protected readonly attendanceActionHint = this.attendance.attendanceActionHint;
 
   constructor() {
     this.attendance.load();
