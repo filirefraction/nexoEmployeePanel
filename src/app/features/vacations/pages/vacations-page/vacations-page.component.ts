@@ -9,6 +9,13 @@ import {
   VacationRequestPreviewDay
 } from '../../models/vacation-request.model';
 
+const VACATION_REQUEST_STATUS_IDS = {
+  pending: '0D3A16EE-7E16-4CA5-A15B-6097F61E9B01',
+  approved: '1F1A71D8-6A4B-49CC-B4EF-804D285B7D02',
+  rejected: 'B4C3EAB6-3A93-4C84-A5D2-4AF3E28B3903',
+  canceled: '8A6D8D93-F0A0-4505-B1B2-69A2E04FBC04'
+} as const;
+
 @Component({
   selector: 'app-vacations-page',
   imports: [DatePipe, DecimalPipe, NgFor, NgIf, ReactiveFormsModule],
@@ -133,9 +140,11 @@ export class VacationsPageComponent {
   }
 
   protected getStatusLabel(
-    item: Pick<VacationRequestListItem, 'vacationRequestStatusName'> | Pick<VacationRequest, 'vacationRequestStatusName'>
+    item:
+      | Pick<VacationRequestListItem, 'vacationRequestStatusId' | 'vacationRequestStatusName'>
+      | Pick<VacationRequest, 'vacationRequestStatusId' | 'vacationRequestStatusName'>
   ): string {
-    switch (item.vacationRequestStatusName.toLowerCase()) {
+    switch (this.resolveVacationRequestStatusCode(item.vacationRequestStatusId, item.vacationRequestStatusName)) {
       case 'approved':
         return 'Aprobada';
       case 'rejected':
@@ -149,9 +158,11 @@ export class VacationsPageComponent {
   }
 
   protected getStatusTone(
-    item: Pick<VacationRequestListItem, 'vacationRequestStatusName'> | Pick<VacationRequest, 'vacationRequestStatusName'>
+    item:
+      | Pick<VacationRequestListItem, 'vacationRequestStatusId' | 'vacationRequestStatusName'>
+      | Pick<VacationRequest, 'vacationRequestStatusId' | 'vacationRequestStatusName'>
   ): string {
-    switch (item.vacationRequestStatusName.toLowerCase()) {
+    switch (this.resolveVacationRequestStatusCode(item.vacationRequestStatusId, item.vacationRequestStatusName)) {
       case 'approved':
         return 'vacations-page__status--success';
       case 'rejected':
@@ -161,6 +172,34 @@ export class VacationsPageComponent {
       case 'pending':
       default:
         return 'vacations-page__status--warning';
+    }
+  }
+
+  private resolveVacationRequestStatusCode(
+    statusId: string,
+    statusName?: string
+  ): 'approved' | 'rejected' | 'canceled' | 'pending' {
+    switch (statusId.toUpperCase()) {
+      case VACATION_REQUEST_STATUS_IDS.approved:
+        return 'approved';
+      case VACATION_REQUEST_STATUS_IDS.rejected:
+        return 'rejected';
+      case VACATION_REQUEST_STATUS_IDS.canceled:
+        return 'canceled';
+      case VACATION_REQUEST_STATUS_IDS.pending:
+        return 'pending';
+      default:
+        switch ((statusName ?? '').toLowerCase()) {
+          case 'approved':
+            return 'approved';
+          case 'rejected':
+            return 'rejected';
+          case 'canceled':
+            return 'canceled';
+          case 'pending':
+          default:
+            return 'pending';
+        }
     }
   }
 
