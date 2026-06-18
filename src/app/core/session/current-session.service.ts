@@ -90,6 +90,20 @@ export class CurrentSessionService {
     return this.tokenStore.getAccessToken();
   }
 
+  ensureValidAccessToken(minValiditySeconds = 30): Observable<string | null> {
+    const accessToken = this.tokenStore.getAccessToken();
+
+    if (accessToken && !this.isAccessTokenExpiredOrNearExpiry(minValiditySeconds)) {
+      return of(accessToken);
+    }
+
+    if (!this.hasRefreshToken()) {
+      return of(accessToken);
+    }
+
+    return this.refreshSession().pipe(map(() => this.tokenStore.getAccessToken()));
+  }
+
   hasRefreshToken(): boolean {
     return this.tokenStore.hasRefreshToken();
   }
@@ -194,6 +208,22 @@ export class CurrentSessionService {
   private clearSession(): void {
     this.tokenStore.clear();
     this.currentUserState.set(null);
+  }
+
+  private isAccessTokenExpiredOrNearExpiry(minValiditySeconds: number): boolean {
+    const expiresAtUtc = this.tokenStore.getAccessTokenExpiresAtUtc();
+
+    if (!expiresAtUtc) {
+      return true;
+    }
+
+    const expiresAt = Date.parse(expiresAtUtc);
+
+    if (Number.isNaN(expiresAt)) {
+      return true;
+    }
+
+    return expiresAt - Date.now() <= minValiditySeconds * 1000;
   }
 
   private get authApi(): AuthApiService {

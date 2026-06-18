@@ -18,47 +18,44 @@ export class AuthInterceptor implements HttpInterceptor {
   private readonly session = inject(CurrentSessionService);
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    const shouldAttachToken = this.shouldAttachToken(request.url);
-    const accessToken = shouldAttachToken ? this.session.getAccessToken() : null;
+    if (!this.shouldAttachToken(request.url)) {
+      return next.handle(request);
+    }
 
-    const authRequest =
-      accessToken && shouldAttachToken
-        ? request.clone({
-            setHeaders: {
-              Authorization: `Bearer ${accessToken}`
-            }
-          })
-        : request;
+    return this.session.ensureValidAccessToken().pipe(
+      switchMap((accessToken) => {
+        const authRequest = this.cloneWithAuthorization(request, accessToken);
 
-    return next.handle(authRequest).pipe(
-      catchError((error: unknown) => {
-        if (!this.shouldAttemptRefresh(authRequest, error)) {
-          return throwError(() => error);
-        }
-
-        return this.session.refreshSession().pipe(
-          switchMap(() => {
-            const refreshedAccessToken = this.session.getAccessToken();
-
-            if (!refreshedAccessToken) {
-              this.session.forceLogoutToLogin();
+        return next.handle(authRequest).pipe(
+          catchError((error: unknown) => {
+            if (!this.shouldAttemptRefresh(authRequest, error)) {
               return throwError(() => error);
             }
 
-            return next.handle(
-              authRequest.clone({
-                context: authRequest.context.set(AUTH_RETRY_CONTEXT, true),
-                setHeaders: {
-                  Authorization: `Bearer ${refreshedAccessToken}`
+            return this.session.refreshSession().pipe(
+              switchMap(() => {
+                const refreshedAccessToken = this.session.getAccessToken();
+
+                if (!refreshedAccessToken) {
+                  this.session.forceLogoutToLogin();
+                  return throwError(() => error);
                 }
+
+                return next.handle(
+                  this.cloneWithAuthorization(authRequest, refreshedAccessToken, true)
+                );
+              }),
+              catchError((refreshError) => {
+                this.session.forceLogoutToLogin();
+                return throwError(() => refreshError);
               })
             );
-          }),
-          catchError((refreshError) => {
-            this.session.forceLogoutToLogin();
-            return throwError(() => refreshError);
           })
         );
+      }),
+      catchError((refreshError) => {
+        this.session.forceLogoutToLogin();
+        return throwError(() => refreshError);
       })
     );
   }
@@ -84,5 +81,26 @@ export class AuthInterceptor implements HttpInterceptor {
       !this.isAnonymousRequest(request.url) &&
       this.session.hasRefreshToken()
     );
+  }
+
+  private cloneWithAuthorization(
+    request: HttpRequest<unknown>,
+    accessToken: string | null,
+    isRetry = false
+  ): HttpRequest<unknown> {
+    if (!accessToken) {
+      return isRetry
+        ? request.clone({
+            context: request.context.set(AUTH_RETRY_CONTEXT, true)
+          })
+        : request;
+    }
+
+    return request.clone({
+      context: request.context.set(AUTH_RETRY_CONTEXT, isRetry),
+      setHeaders: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    });
   }
 }

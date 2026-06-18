@@ -21,6 +21,10 @@ export class AuthTokenStoreService {
     return this.read()?.refreshToken ?? null;
   }
 
+  getAccessTokenExpiresAtUtc(): string | null {
+    return this.read()?.accessTokenExpiresAtUtc ?? null;
+  }
+
   hasRefreshToken(): boolean {
     return Boolean(this.getRefreshToken());
   }
