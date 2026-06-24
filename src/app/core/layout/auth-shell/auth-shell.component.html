@@ -1,6 +1,51 @@
-<section class="auth-shell page-shell">
-  <div class="auth-shell__backdrop"></div>
-  <div class="auth-shell__panel">
-    <router-outlet />
+<section class="relative isolate min-h-dvh overflow-hidden bg-transparent">
+  <div class="absolute inset-0 bg-[linear-gradient(180deg,#fbfdfd_0%,#f4f8f8_100%)]"></div>
+  <div class="absolute left-0 top-0 h-full w-full bg-[radial-gradient(circle_at_12%_16%,rgba(13,148,136,0.12),transparent_18rem)]"></div>
+
+  <div class="relative mx-auto grid min-h-dvh w-full max-w-6xl items-center gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,25rem)] lg:gap-16 lg:px-10">
+    <section class="hidden gap-3 lg:grid">
+      <div class="grid gap-1">
+        <img
+          class="h-auto w-[15rem] max-w-none object-contain sm:w-[18rem] lg:w-[21rem]"
+          src="/assets/nexo-logo-dark.png"
+          alt="Nexo"
+        />
+
+        <div class="grid gap-1">
+          <h1 class="max-w-lg text-balance text-[2rem] font-semibold leading-tight tracking-[-0.04em] text-[var(--ne-ink)] sm:text-[2.25rem]">
+            Acceso simple a tu día laboral.
+          </h1>
+        </div>
+      </div>
+
+      <div class="grid gap-3 border-l border-[var(--ne-line)] pl-4 sm:pl-5">
+        @for (highlight of highlights; track highlight.title) {
+          <article class="grid gap-1.5">
+            <div class="flex items-center gap-3">
+              <span class="flex h-9 w-9 items-center justify-center rounded-2xl bg-[rgba(15,118,110,0.08)] text-sm text-[var(--ne-brand-strong)]">
+                <i [class]="highlight.icon"></i>
+              </span>
+              <strong class="text-sm font-semibold text-[var(--ne-ink)]">{{ highlight.title }}</strong>
+            </div>
+            <p class="pl-12 text-sm leading-6 text-[var(--ne-slate)]">{{ highlight.description }}</p>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="relative grid gap-5">
+      <div class="flex justify-center lg:hidden">
+        <img
+          class="h-auto w-[14rem] object-contain sm:w-[16rem]"
+          src="/assets/nexo-logo-dark.png"
+          alt="Nexo"
+        />
+      </div>
+
+      <div class="absolute inset-0 rounded-[30px] bg-[linear-gradient(180deg,rgba(255,255,255,0.34),rgba(255,255,255,0.12))] blur-xl"></div>
+      <div class="relative">
+        <router-outlet />
+      </div>
+    </section>
   </div>
 </section>

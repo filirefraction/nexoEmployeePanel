@@ -23,6 +23,10 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     return this.session.ensureValidAccessToken().pipe(
+      catchError((sessionError) => {
+        this.session.forceLogoutToLogin();
+        return throwError(() => sessionError);
+      }),
       switchMap((accessToken) => {
         const authRequest = this.cloneWithAuthorization(request, accessToken);
 
@@ -52,10 +56,6 @@ export class AuthInterceptor implements HttpInterceptor {
             );
           })
         );
-      }),
-      catchError((refreshError) => {
-        this.session.forceLogoutToLogin();
-        return throwError(() => refreshError);
       })
     );
   }

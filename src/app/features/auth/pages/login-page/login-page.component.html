@@ -1,49 +1,107 @@
-<article class="surface-card login-page">
-  <div class="section-copy">
-    <span class="pill-chip">Empleado</span>
-    <h1>Acceso a Nexo</h1>
-    <p>
-      Inicia sesion con tu cuenta de colaborador para consultar asistencias, vacaciones y tu
-      informacion personal.
-    </p>
-  </div>
+<article class="rounded-[28px] border border-[var(--ne-line)] bg-white/95 p-5 shadow-[0_18px_38px_rgba(23,26,31,0.08)] backdrop-blur-xl sm:p-6">
+  <div class="grid gap-4">
+    <header class="grid gap-2">
+      <span class="pill-chip">Portal personal</span>
 
-  <form class="login-page__form" [formGroup]="loginForm" (ngSubmit)="submit()">
-    <p *ngIf="infoMessage" class="login-page__info">{{ infoMessage }}</p>
+      <div class="grid gap-1">
+        <h2 class="text-[1.7rem] font-semibold tracking-[-0.03em] text-[var(--ne-ink)] sm:text-[1.9rem]">
+          Inicia sesión
+        </h2>
+      </div>
+    </header>
 
-    <div class="login-page__fields">
-      <label>
-        <span>Correo electronico</span>
-        <input type="email" formControlName="email" placeholder="empleado@empresa.com" />
-        <small *ngIf="shouldShowFieldError('email')">Ingresa un correo electronico valido.</small>
-      </label>
-
-      <label>
-        <span>Contrasena</span>
-        <input type="password" formControlName="password" placeholder="********" />
-        <small *ngIf="shouldShowFieldError('password')">La contrasena es obligatoria.</small>
-      </label>
-
-      <label *ngIf="requiresCompanySelection()">
-        <span>Empresa</span>
-        <select formControlName="companyIdHint">
-          <option value="">Selecciona una empresa</option>
-          <option *ngFor="let company of companyOptions()" [value]="company.companyId">
-            {{ company.tradeName || company.name }}
-          </option>
-        </select>
-        <small>Selecciona la empresa correcta para completar el acceso.</small>
-      </label>
+    <div class="grid gap-3">
+      <p-message *ngIf="infoMessage" severity="info" [text]="infoMessage"></p-message>
+      <p-message
+        *ngIf="errorMessage()"
+        [severity]="requiresCompanySelection() ? 'warn' : 'error'"
+        [text]="errorMessage() ?? ''"
+      ></p-message>
     </div>
 
-    <p *ngIf="errorMessage()" class="login-page__error">{{ errorMessage() }}</p>
+    <form class="grid gap-4" [formGroup]="loginForm" (ngSubmit)="submit()">
+      <div class="grid gap-4">
+        <div class="grid gap-1.5">
+          <p-floatlabel variant="on">
+            <input
+              pInputText
+              id="employee-login-email"
+              type="email"
+              class="w-full"
+              formControlName="email"
+            />
+            <label for="employee-login-email">Correo electrónico</label>
+          </p-floatlabel>
+          @if (shouldShowFieldError('email')) {
+            <small class="text-xs font-medium text-[var(--ne-accent)]">
+              Ingresa un correo electrónico válido.
+            </small>
+          }
+        </div>
 
-    <button
-      class="action-button action-button--primary"
-      type="submit"
-      [disabled]="loginForm.invalid || isSubmitting()"
-    >
-      {{ isSubmitting() ? 'Iniciando...' : 'Iniciar sesion' }}
-    </button>
-  </form>
+        <div class="grid gap-1.5">
+          <p-floatlabel variant="on">
+            <p-password
+              inputId="employee-login-password"
+              formControlName="password"
+              [feedback]="false"
+              [toggleMask]="true"
+              [fluid]="true"
+              inputStyleClass="w-full"
+              styleClass="w-full"
+            ></p-password>
+            <label for="employee-login-password">Contraseña</label>
+          </p-floatlabel>
+          @if (shouldShowFieldError('password')) {
+            <small class="text-xs font-medium text-[var(--ne-accent)]">
+              La contraseña es obligatoria.
+            </small>
+          }
+        </div>
+
+        @if (requiresCompanySelection()) {
+          <div class="grid gap-1.5">
+            <p-floatlabel variant="on">
+              <p-select
+                inputId="employee-login-company"
+                formControlName="companyIdHint"
+                [options]="companySelectOptions()"
+                optionLabel="label"
+                optionValue="value"
+                [showClear]="true"
+                appendTo="body"
+                class="w-full"
+              ></p-select>
+              <label for="employee-login-company">Empresa</label>
+            </p-floatlabel>
+            @if (shouldShowFieldError('companyIdHint')) {
+              <small class="text-xs font-medium text-[var(--ne-accent)]">
+                Selecciona la empresa correcta para continuar.
+              </small>
+            } @else {
+              <small class="text-xs text-[var(--ne-slate)]">
+                Selecciona tu empresa para continuar.
+              </small>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="grid gap-3 pt-1">
+        <button
+          pButton
+          type="submit"
+          class="w-full"
+          [loading]="isSubmitting()"
+          [disabled]="loginForm.invalid || isSubmitting()"
+        >
+          {{ isSubmitting() ? 'Ingresando...' : 'Entrar' }}
+        </button>
+
+        <p class="text-center text-xs leading-5 text-[var(--ne-slate)]">
+          Si tu cuenta pertenece a varias empresas, podrás elegir una.
+        </p>
+      </div>
+    </form>
+  </div>
 </article>

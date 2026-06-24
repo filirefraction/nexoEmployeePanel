@@ -1,36 +1,70 @@
-<div class="employee-shell page-shell">
-  <header class="employee-shell__header">
-    <div class="employee-shell__brand">
-      <span class="pill-chip">PWA</span>
-      <div class="section-copy">
-        <p>{{ appName }}</p>
-        <small>Portal del empleado</small>
-      </div>
-    </div>
+<div class="min-h-dvh bg-transparent pb-28">
+  <header class="sticky top-0 z-20 border-b border-[var(--ne-line)] bg-white/88 backdrop-blur-xl">
+    <div class="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
+      <div class="flex min-w-0 items-center gap-2.5">
+        <div class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl border border-[var(--ne-line)] bg-[linear-gradient(135deg,rgba(15,118,110,0.12),rgba(13,148,136,0.06))] shadow-[0_10px_24px_rgba(15,118,110,0.08)]">
+          <img class="h-7 w-7 object-contain" src="/assets/nexo-isotipo-dark.png" alt="Nexo" />
+        </div>
 
-    <div class="employee-shell__session">
-      <div class="section-copy">
-        <p>{{ displayName() }}</p>
-        <small>{{ currentUser()?.email }}</small>
+        <p class="truncate text-sm font-semibold uppercase tracking-[0.24em] text-[var(--ne-brand)]">
+          Portal personal
+        </p>
       </div>
 
-      <button class="employee-shell__logout" type="button" (click)="logout()">Salir</button>
+      <div class="flex items-center gap-2.5">
+        <div class="hidden text-right sm:block">
+          <p class="truncate text-sm font-semibold text-[var(--ne-ink)]">
+            {{ displayName() }}
+          </p>
+          <p class="truncate text-xs text-[var(--ne-slate)]">
+            {{ currentUser()?.email }}
+          </p>
+        </div>
+
+        <div
+          *ngIf="!currentUser()?.imageUrl"
+          class="flex h-9 w-9 items-center justify-center overflow-hidden rounded-2xl border border-[var(--ne-line)] bg-[var(--ne-surface)] text-sm font-semibold text-[var(--ne-brand-strong)] shadow-[0_8px_18px_rgba(23,26,31,0.05)]"
+        >
+          {{ initials() }}
+        </div>
+
+        <img
+          *ngIf="currentUser()?.imageUrl"
+          class="h-9 w-9 rounded-2xl object-cover shadow-[0_8px_18px_rgba(23,26,31,0.06)]"
+          [src]="currentUser()?.imageUrl ?? ''"
+          [alt]="displayName()"
+        />
+
+        <button
+          pButton
+          type="button"
+          severity="secondary"
+          [rounded]="true"
+          [text]="true"
+          icon="pi pi-sign-out"
+          aria-label="Cerrar sesion"
+          (click)="logout()"
+        ></button>
+      </div>
     </div>
   </header>
 
-  <main class="employee-shell__content">
+  <main class="mx-auto grid w-full max-w-5xl gap-4 px-4 pb-6 pt-4 sm:px-6">
     <router-outlet />
   </main>
 
-  <nav class="employee-shell__nav">
-    <a
-      *ngFor="let item of navItems"
-      class="employee-shell__nav-link"
-      [routerLink]="item.link"
-      routerLinkActive="employee-shell__nav-link--active"
-      [routerLinkActiveOptions]="{ exact: true }"
-    >
-      <span>{{ item.label }}</span>
-    </a>
+  <nav class="fixed inset-x-0 bottom-0 z-30 px-4 pb-[calc(0.95rem+env(safe-area-inset-bottom,0px))]">
+    <div class="mx-auto grid max-w-md grid-cols-4 gap-2 rounded-[28px] border border-[var(--ne-line)] bg-white/92 p-2 shadow-[0_22px_44px_rgba(23,26,31,0.14)] backdrop-blur-xl">
+      <a
+        *ngFor="let item of navItems"
+        class="flex min-h-[4.1rem] flex-col items-center justify-center gap-1 rounded-[20px] border border-transparent px-2 py-2 text-center text-[0.72rem] font-semibold text-[var(--ne-slate)] transition duration-150 hover:bg-[rgba(15,118,110,0.05)] hover:text-[var(--ne-brand-strong)]"
+        [routerLink]="item.link"
+        routerLinkActive="!border-[1.5px] !border-[var(--ne-brand)] !bg-white !text-[var(--ne-brand-strong)] !shadow-none"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <i class="text-base" [class]="item.icon"></i>
+        <span>{{ item.label }}</span>
+      </a>
+    </div>
   </nav>
 </div>

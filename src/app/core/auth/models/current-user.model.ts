@@ -7,6 +7,7 @@ export interface CurrentUser {
   readonly employeeId?: string | null;
   readonly email: string;
   readonly displayName: string;
+  readonly imageUrl?: string | null;
   readonly isEmailConfirmed: boolean;
   readonly mfaEnabled: boolean;
   readonly isActive: boolean;

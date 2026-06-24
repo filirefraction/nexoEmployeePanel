@@ -1,14 +1,31 @@
 import { NgFor, NgIf } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { DatePickerModule } from 'primeng/datepicker';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { MessageModule } from 'primeng/message';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
 import { CurrentSessionService } from '../../../../core/session/current-session.service';
 import { EmployeeAttendanceFacade } from '../../facades/employee-attendance.facade';
 import { AttendanceRecordListItem } from '../../models/attendance-record.model';
 
 @Component({
   selector: 'app-attendance-page',
-  imports: [NgFor, NgIf, ReactiveFormsModule],
+  imports: [
+    NgFor,
+    NgIf,
+    ReactiveFormsModule,
+    RouterLink,
+    ButtonModule,
+    DatePickerModule,
+    FloatLabelModule,
+    MessageModule,
+    SelectModule,
+    TagModule
+  ],
   templateUrl: './attendance-page.component.html',
   styleUrl: './attendance-page.component.css'
 })
@@ -19,11 +36,16 @@ export class AttendancePageComponent {
   protected readonly session = inject(CurrentSessionService);
   protected readonly attendance = inject(EmployeeAttendanceFacade);
 
-  protected readonly filterForm = this.formBuilder.nonNullable.group({
-    fromDate: [''],
-    toDate: [''],
-    isManual: ['']
+  protected readonly filterForm = this.formBuilder.group({
+    fromDate: this.formBuilder.control<Date | null>(null),
+    toDate: this.formBuilder.control<Date | null>(null),
+    isManual: this.formBuilder.nonNullable.control<string>('')
   });
+  protected readonly manualFilterOptions = [
+    { label: 'Todos', value: '' },
+    { label: 'Registros automaticos', value: 'false' },
+    { label: 'Registros manuales', value: 'true' }
+  ];
 
   protected readonly records = this.attendance.records;
   protected readonly pagination = this.attendance.pagination;
@@ -32,6 +54,7 @@ export class AttendancePageComponent {
   protected readonly errorMessage = this.attendance.errorMessage;
   protected readonly successMessage = this.attendance.successMessage;
   protected readonly latestActionRecord = this.attendance.latestActionRecord;
+  protected readonly latestKnownRecord = this.attendance.latestKnownRecord;
   protected readonly canCheckIn = this.attendance.canCheckIn;
   protected readonly canCheckOut = this.attendance.canCheckOut;
   protected readonly attendanceStatusLabel = this.attendance.attendanceStatusLabel;
@@ -47,8 +70,8 @@ export class AttendancePageComponent {
 
     this.attendance.load({
       pageNumber: 1,
-      fromDate: value.fromDate || null,
-      toDate: value.toDate || null,
+      fromDate: this.toApiDate(value.fromDate),
+      toDate: this.toApiDate(value.toDate),
       isManual:
         value.isManual === ''
           ? null
@@ -60,8 +83,8 @@ export class AttendancePageComponent {
 
   protected resetFilters(): void {
     this.filterForm.reset({
-      fromDate: '',
-      toDate: '',
+      fromDate: null,
+      toDate: null,
       isManual: ''
     });
     this.attendance.load({
@@ -104,7 +127,10 @@ export class AttendancePageComponent {
     });
   }
 
-  protected formatAttendanceTime(value: string | null | undefined, timeZone?: string | null): string {
+  protected formatAttendanceTime(
+    value: string | null | undefined,
+    timeZone?: string | null
+  ): string {
     if (!value) {
       return 'Sin registro';
     }
@@ -133,6 +159,32 @@ export class AttendancePageComponent {
     }
 
     return `${hours} h ${minutes} min`;
+  }
+
+  protected resolveRecordStatus(record: AttendanceRecordListItem): string {
+    if (!record.checkInDate) {
+      return 'Sin entrada';
+    }
+
+    if (!record.checkOutDate) {
+      return 'Abierta';
+    }
+
+    return 'Cerrada';
+  }
+
+  protected resolveRecordStatusSeverity(
+    record: AttendanceRecordListItem
+  ): 'success' | 'warn' | 'secondary' {
+    if (!record.checkInDate) {
+      return 'secondary';
+    }
+
+    if (!record.checkOutDate) {
+      return 'warn';
+    }
+
+    return 'success';
   }
 
   private consumeDashboardAction(): void {
@@ -191,5 +243,16 @@ export class AttendancePageComponent {
   private parseUtcDateTime(value: string): Date {
     const hasOffset = /[zZ]|[+-]\d{2}:\d{2}$/.test(value);
     return new Date(hasOffset ? value : `${value}Z`);
+  }
+
+  private toApiDate(value: Date | null | undefined): string | null {
+    if (!value) {
+      return null;
+    }
+
+    const year = value.getFullYear();
+    const month = `${value.getMonth() + 1}`.padStart(2, '0');
+    const day = `${value.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

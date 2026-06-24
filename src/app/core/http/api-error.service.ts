@@ -77,11 +77,11 @@ export class ApiErrorService {
       'Invalid email or password.': 'Correo o contrasena incorrectos.',
       'Validation error.': 'Error de validacion.',
       'Ya existe un check-in abierto para el empleado actual.':
-        'Ya tienes una jornada abierta. Debes registrar tu check-out antes de volver a iniciar.',
+        'Ya tienes una jornada abierta. Debes registrar tu salida antes de volver a iniciar.',
       'Ya existe un check-in registrado para el día actual.':
-        'Ya registraste tu check-in para el dia operativo actual.',
+        'Ya registraste tu entrada para el dia operativo actual.',
       'Ya existe un check-out registrado para el día actual.':
-        'Ya registraste tu check-out para el dia operativo actual.',
+        'Ya registraste tu salida para el dia operativo actual.',
       'Only pending vacation requests can perform this action.':
         'Solo las solicitudes pendientes pueden realizar esta accion.',
       'The authenticated user is not linked to an active employee.':

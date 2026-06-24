@@ -1,24 +1,27 @@
 {
-  "name": "Nexo Empleado",
+  "name": "Nexo Empleados",
   "short_name": "Nexo",
-  "description": "Portal del empleado de Nexo para asistencia, vacaciones y perfil.",
+  "description": "Portal personal de Nexo para asistencia, vacaciones y perfil.",
   "lang": "es-MX",
-  "start_url": "/",
+  "scope": "/",
+  "start_url": "/app/inicio",
   "display": "standalone",
-  "background_color": "#fcf9f4",
-  "theme_color": "#12243d",
+  "orientation": "portrait",
+  "background_color": "#f7f9fb",
+  "theme_color": "#0f766e",
   "icons": [
     {
-      "src": "icons/icon-192.svg",
+      "src": "assets/nexo-android-chrome-192x192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-512.svg",
+      "src": "assets/nexo-android-chrome-512x512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "categories": ["business", "productivity", "utilities"]
 }

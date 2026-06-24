@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { PwaStatusCenterComponent } from './core/pwa/components/pwa-status-center.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, PwaStatusCenterComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

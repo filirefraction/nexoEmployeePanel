@@ -1,13 +1,17 @@
-﻿# MANUAL_TEST_CHECKLIST
+# MANUAL_TEST_CHECKLIST
 
 ## Objetivo
 
-Validar funcionalmente `nexoEmployeePanel` contra `nexoApi`.
+Validar funcionalmente `nexoEmployeePanel` contra `nexoApi` y confirmar el comportamiento PWA real.
 
 ## Precondiciones
 
 - `nexoApi` corriendo en `http://localhost:5031`
-- `nexoEmployeePanel` corriendo en `http://localhost:4201`
+- para UI dev normal:
+  - `nexoEmployeePanel` en `http://localhost:4201`
+- para pruebas PWA reales:
+  - ejecutar `npm.cmd run qa:pwa`
+  - abrir `http://127.0.0.1:4301`
 - usuario con rol `employee`
 - usuario con `employeeId` valido
 - datos demo en asistencia y vacaciones si se quiere probar historial
@@ -124,7 +128,6 @@ Resultado:
 Nota:
 
 - la UI interpreta timestamps UTC y los presenta usando `branch.timeZone`
-- criterio replicado en `nexoAdminPanel/Asistencia` y `nexoAdminPanel/Reports`
 
 ## 4. Vacations
 
@@ -173,7 +176,7 @@ Resultado:
 Esperado:
 
 - redirigir a `/login`
-- incluir eturnUrl`
+- incluir `returnUrl`
 
 Resultado:
 
@@ -193,20 +196,70 @@ Resultado:
 
 - `OK`
 
-## 7. Movil/PWA base
+## 7. PWA real
 
-- revisar en viewport movil
-- validar `manifest.webmanifest`
-- validar iconos y `theme-color`
+### Instalacion
+
+- ejecutar `npm.cmd run qa:pwa`
+- abrir `http://127.0.0.1:4301`
+- iniciar sesion
+- esperar el prompt `Instala Nexo Empleados` o usar el menu del navegador para instalar
 
 Esperado:
 
-- navegacion inferior usable
-- layout estable en movil
+- el manifest se detecta correctamente
+- la app se puede instalar
+- al abrir en modo standalone mantiene shell y navegacion inferior
 
 Resultado:
 
-- `OK`
+- `PENDIENTE`
+
+### Offline visual
+
+- con la app ya abierta, desactivar red desde DevTools o desconectar internet
+
+Esperado:
+
+- aparece banner `Sin conexion`
+- la UI no colapsa
+- las nuevas requests muestran error controlado y no rompen la sesion
+
+Resultado:
+
+- `PENDIENTE`
+
+### Actualizacion de version
+
+- con `qa:pwa` corriendo, abrir la app instalada o en browser
+- cambiar cualquier texto visible del proyecto
+- volver a ejecutar `npm.cmd run build`
+- volver a ejecutar `npm.cmd run serve:pwa`
+- refrescar la app abierta
+
+Esperado:
+
+- el service worker detecta una nueva version
+- aparece el prompt `Nueva version disponible`
+- al confirmar, la app recarga con la nueva version
+
+Resultado:
+
+- `PENDIENTE`
+
+### Home screen / iconos
+
+- validar icono, nombre corto, `theme-color` y apertura desde acceso directo
+
+Esperado:
+
+- nombre visible correcto: `Nexo`
+- app abierta con look estable
+- color del sistema alineado al branding
+
+Resultado:
+
+- `PENDIENTE`
 
 ## 8. Resultado
 
@@ -215,6 +268,7 @@ Registrar ademas:
 - request afectada
 - respuesta HTTP
 - `correlationId` si aplica
+- navegador y dispositivo usados en pruebas PWA
 
 ## Cierre
 
@@ -226,7 +280,8 @@ Estado final de esta ronda:
 - `Vacations`: `OK`
 - `Perfil`: `OK`
 - `Guards`: `OK`
-- `Movil/PWA base`: `OK`
-- `Ronda manual`: `CERRADA`
-
-
+- `PWA instalacion`: `PENDIENTE`
+- `PWA offline`: `PENDIENTE`
+- `PWA actualizacion`: `PENDIENTE`
+- `PWA iconos/home screen`: `PENDIENTE`
+- `Ronda manual`: `ABIERTA`

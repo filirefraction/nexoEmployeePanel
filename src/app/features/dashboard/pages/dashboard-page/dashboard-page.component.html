@@ -1,63 +1,140 @@
-<section class="dashboard-page">
-  <article *ngIf="isLoading()" class="surface-card dashboard-page__hero">
-    <div class="section-copy">
+<section class="grid gap-4">
+  <article *ngIf="isLoading()" class="surface-card grid gap-4 p-5">
+    <div class="grid gap-2">
       <span class="pill-chip">Inicio</span>
-      <h1>Cargando tu resumen</h1>
-      <p>Estamos preparando la información del día, tu turno y tus movimientos recientes.</p>
+      <h2 class="m-0 text-2xl font-semibold tracking-[-0.03em] text-[var(--ne-ink)]">
+        Cargando resumen
+      </h2>
+      <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+        Estamos preparando tu informacion.
+      </p>
     </div>
   </article>
 
-  <article *ngIf="errorMessage()" class="surface-card dashboard-page__hero dashboard-page__hero--error">
-    <div class="section-copy">
+  <article *ngIf="errorMessage()" class="surface-card grid gap-4 border-[rgba(180,35,24,0.14)] p-5">
+    <div class="grid gap-2">
       <span class="pill-chip">Inicio</span>
-      <h1>No fue posible cargar tu resumen</h1>
-      <p>{{ errorMessage() }}</p>
+      <h2 class="m-0 text-2xl font-semibold tracking-[-0.03em] text-[var(--ne-ink)]">
+        No fue posible cargar el resumen
+      </h2>
+      <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">{{ errorMessage() }}</p>
     </div>
 
-    <button class="action-button action-button--secondary" type="button" (click)="dashboard.load()">
-      Reintentar
-    </button>
+    <div class="flex flex-wrap gap-3">
+      <button pButton type="button" severity="secondary" (click)="dashboard.load()">
+        Reintentar
+      </button>
+    </div>
   </article>
 
   <ng-container *ngIf="summary() as data">
-    <article class="surface-card dashboard-page__hero">
-      <div class="section-copy">
-        <span class="pill-chip">Inicio</span>
-        <h1>{{ data.employee.fullName }}</h1>
-        <p>
-          {{ data.employee.jobPositionName || 'Puesto pendiente' }}
-          <span *ngIf="data.employee.branchName">· {{ data.employee.branchName }}</span>
-        </p>
-      </div>
+    <article class="surface-card overflow-hidden p-5 sm:p-6">
+      <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+        <div class="grid gap-5">
+          <div class="flex items-start gap-4">
+            <div
+              *ngIf="!data.employee.imageUrl"
+              class="flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] bg-[rgba(15,118,110,0.10)] text-lg font-semibold text-[var(--ne-brand-strong)] shadow-[0_14px_26px_rgba(15,118,110,0.10)]"
+            >
+              {{ getInitials(data.employee.fullName) }}
+            </div>
 
-      <div class="dashboard-page__hero-meta">
-        <span
-          class="dashboard-page__status"
-          [class]="getAttendanceStatusTone(data.attendanceStatus)"
-        >
-          {{ getAttendanceStatusLabel(data.attendanceStatus) }}
-        </span>
-        <small>
-          {{
-            formatLocalDateTime(data.localNow, data.timeZone, {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true
-            })
-          }}
-        </small>
-      </div>
+            <img
+              *ngIf="data.employee.imageUrl"
+              class="h-16 w-16 shrink-0 rounded-[24px] object-cover shadow-[0_18px_32px_rgba(23,26,31,0.14)]"
+              [src]="data.employee.imageUrl"
+              [alt]="data.employee.fullName"
+            />
 
+            <div class="grid min-w-0 gap-2">
+              <span class="pill-chip">Inicio</span>
+              <div class="grid gap-1">
+                      <h2 class="m-0 text-2xl font-semibold tracking-[-0.03em] text-[var(--ne-ink)]">
+ {{ data.employee.fullName }}
+      </h2>
+                <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+                  {{ data.employee.jobPositionName || 'Puesto pendiente' }}
+                  <span *ngIf="data.employee.branchName"> · {{ data.employee.branchName }}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <p-tag
+              [value]="getAttendanceStatusLabel(data.attendanceStatus)"
+              [severity]="getAttendanceTagSeverity(data.attendanceStatus)"
+            ></p-tag>
+            <p-tag
+              *ngIf="data.isNonWorkingDay"
+              value="Dia no laborable"
+              severity="secondary"
+            ></p-tag>
+            <p-tag
+              *ngIf="data.employee.isRemoteAllowed"
+              value="Remoto habilitado"
+              severity="info"
+            ></p-tag>
+          </div>
+        </div>
+
+        <div class="grid gap-3 lg:justify-items-end">
+          <div class="grid gap-1 text-left lg:max-w-[18rem] lg:text-right">
+            <p class="m-0 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[var(--ne-brand)]">
+              Hora local
+            </p>
+            <strong class="block text-sm font-semibold text-[var(--ne-ink)]">
+              {{
+                formatLocalDateTime(data.localNow, data.timeZone, {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true
+                })
+              }}
+            </strong>
+            <small class="block text-xs leading-5 text-[var(--ne-slate)]">
+              {{ data.timeZone }}
+            </small>
+          </div>
+
+          <div class="grid w-full gap-3 sm:max-w-sm sm:grid-cols-2 lg:max-w-[21rem] lg:grid-cols-1">
+            <a
+              [routerLink]="primaryAction().link"
+              [queryParams]="primaryAction().queryParams ?? null"
+              class="inline-flex min-h-[2.75rem] items-center justify-center rounded-[0.5rem] border border-[rgba(15,118,110,0.16)] bg-[rgba(15,118,110,0.10)] px-[0.95rem] text-[0.875rem] font-semibold !text-[var(--ne-brand-strong)] transition duration-150 hover:bg-[rgba(15,118,110,0.14)]"
+            >
+              {{ primaryAction().label }}
+            </a>
+
+            <a
+              [routerLink]="secondaryAction().link"
+              class="inline-flex min-h-[2.75rem] items-center justify-center rounded-[0.5rem] border border-[var(--ne-brand)] bg-transparent px-[0.95rem] text-[0.875rem] font-semibold !text-[var(--ne-brand-strong)] transition duration-150 hover:bg-[rgba(15,118,110,0.04)]"
+            >
+              {{ secondaryAction().label }}
+            </a>
+          </div>
+        </div>
+      </div>
     </article>
 
-    <section class="dashboard-page__grid">
-      <article class="surface-card dashboard-page__card">
-        <span class="pill-chip">Turno de hoy</span>
-        <h2>{{ data.todayShift?.name || 'Sin turno asignado' }}</h2>
-        <p *ngIf="data.todayShift; else noShiftBlock">
+    <section class="grid gap-4 lg:grid-cols-3">
+      <article class="surface-card grid gap-3 p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div class="grid gap-1">
+            <span class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[var(--ne-brand)]">
+              Turno de hoy
+            </span>
+            <h2 class="m-0 font-semibold tracking-[-0.03em] text-[var(--ne-ink)]">
+              {{ data.todayShift?.name || 'Sin turno asignado' }}
+            </h2>
+          </div>
+          <i class="pi pi-clock text-base text-[var(--ne-brand)]"></i>
+        </div>
+
+        <p *ngIf="data.todayShift; else noShiftBlock" class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
           {{
             formatLocalDateTime(data.todayShift.scheduledStartLocal, data.timeZone, {
               hour: 'numeric',
@@ -75,60 +152,110 @@
           }}
         </p>
         <ng-template #noShiftBlock>
-          <p>No hay un turno activo para la fecha actual.</p>
+          <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+            No hay un turno activo para la fecha actual.
+          </p>
         </ng-template>
       </article>
 
-      <article class="surface-card dashboard-page__card">
-        <span class="pill-chip">Vacaciones</span>
-        <h2>{{ data.vacationBalanceDays | number: '1.0-2' : 'es-MX' }} días</h2>
-        <p>{{ data.pendingVacationRequests }} solicitud(es) pendiente(s) de respuesta.</p>
+      <article class="surface-card grid gap-3 p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div class="grid gap-1">
+            <span class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[var(--ne-brand)]">
+              Asistencia actual
+            </span>
+            <h2 class="m-0  font-semibold tracking-[-0.03em] text-[var(--ne-ink)]">
+              {{
+                data.todayAttendance?.checkInDate
+                  ? formatUtcDateTime(data.todayAttendance?.checkInDate, data.timeZone, {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true
+                    })
+                  : 'Sin entrada'
+              }}
+            </h2>
+          </div>
+          <i class="pi pi-verified text-base text-[var(--ne-brand)]"></i>
+        </div>
+
+        <div class="grid gap-2 text-sm text-[var(--ne-slate)]">
+          <div class="flex items-center justify-between gap-3">
+            <span>Estatus</span>
+            <span [class]="getAttendanceStatusTone(data.attendanceStatus)">
+              {{ getAttendanceStatusLabel(data.attendanceStatus) }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between gap-3">
+            <span>Salida</span>
+            <strong class="text-right font-semibold text-[var(--ne-ink)]">
+              {{
+                data.todayAttendance?.checkOutDate
+                  ? formatUtcDateTime(data.todayAttendance?.checkOutDate, data.timeZone, {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true
+                    })
+                  : 'Pendiente'
+              }}
+            </strong>
+          </div>
+        </div>
       </article>
 
-      <article class="surface-card dashboard-page__card">
-        <span class="pill-chip">Asistencia actual</span>
-        <h2>
-          {{
-            data.todayAttendance?.checkInDate
-              ? formatUtcDateTime(data.todayAttendance?.checkInDate, data.timeZone, {
-                  hour: 'numeric',
-                  minute: '2-digit',
-                  hour12: true
-                })
-              : 'Sin check-in'
-          }}
-        </h2>
-        <p>
-          {{ data.todayAttendance?.checkOutDate ? 'Check-out:' : 'Estatus:' }}
-          <strong *ngIf="data.todayAttendance?.checkOutDate; else statusOnly">
-            {{
-              formatUtcDateTime(data.todayAttendance?.checkOutDate, data.timeZone, {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-              })
-            }}
-          </strong>
+      <article class="surface-card grid gap-3 p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div class="grid gap-1">
+            <span class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[var(--ne-brand)]">
+              Vacaciones
+            </span>
+            <h2 class="m-0 font-semibold tracking-[-0.03em] text-[var(--ne-ink)]">
+              {{ data.vacationBalanceDays | number: '1.0-2' : 'es-MX' }} dias
+            </h2>
+          </div>
+          <i class="pi pi-calendar text-base text-[var(--ne-brand)]"></i>
+        </div>
+
+        <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+          {{ data.pendingVacationRequests }} solicitud(es) pendiente(s) de respuesta.
         </p>
-        <ng-template #statusOnly>
-          {{ getAttendanceStatusLabel(data.attendanceStatus) }}
-        </ng-template>
+
+        <a
+          routerLink="/app/vacaciones"
+          class="inline-flex min-h-[2.75rem] items-center justify-center rounded-[0.5rem] border border-[var(--ne-brand)] bg-transparent px-[0.95rem] text-[0.875rem] font-semibold !text-[var(--ne-brand-strong)] transition duration-150 hover:bg-[rgba(15,118,110,0.04)]"
+        >
+          Abrir vacaciones
+        </a>
       </article>
     </section>
 
-    <section class="dashboard-page__history">
-      <article class="surface-card dashboard-page__history-card">
-        <div class="dashboard-page__section-head">
-          <div class="section-copy">
-            <span class="pill-chip">Últimos movimientos</span>
-            <h2>Asistencias recientes</h2>
+    <section class="grid gap-4 xl:grid-cols-2">
+      <article class="surface-card grid gap-4 p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div class="grid gap-1">
+            <span class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[var(--ne-brand)]">
+              Ultimos movimientos
+            </span>
+            <h2 class="m-0 font-semibold tracking-[-0.03em] text-[var(--ne-ink)]">
+              Asistencias recientes
+            </h2>
           </div>
+          <a
+            routerLink="/app/asistencia"
+            class="text-sm font-semibold text-[var(--ne-brand)] underline-offset-4 hover:underline"
+          >
+            Ver todo
+          </a>
         </div>
 
-        <ul *ngIf="data.latestAttendanceRecords.length; else emptyAttendance" class="dashboard-page__list">
-          <li *ngFor="let record of data.latestAttendanceRecords; trackBy: trackAttendance">
-            <div>
-              <strong>
+        <ul *ngIf="data.latestAttendanceRecords.length; else emptyAttendance" class="grid gap-3">
+          <li
+            *ngFor="let record of data.latestAttendanceRecords; trackBy: trackAttendance"
+            class="grid gap-3 rounded-[24px] border border-[var(--ne-line)] bg-white/74 p-4 sm:grid-cols-[minmax(0,1fr)_auto]"
+          >
+            <div class="grid gap-1">
+              <strong class="text-sm font-semibold text-[var(--ne-ink)]">
                 {{
                   formatLocalDate(record.attendanceDate, data.timeZone, {
                     weekday: 'short',
@@ -137,7 +264,7 @@
                   })
                 }}
               </strong>
-              <small>
+              <small class="text-xs leading-5 text-[var(--ne-slate)]">
                 Entrada:
                 {{
                   record.checkInDate
@@ -150,28 +277,45 @@
                 }}
               </small>
             </div>
-            <span>{{ formatMinutes(record.workedMinutes) }}</span>
+
+            <div class="grid gap-1 text-left sm:text-right">
+              <strong class="text-sm font-semibold text-[var(--ne-ink)]">
+                {{ formatMinutes(record.workedMinutes) }}
+              </strong>
+              <small class="text-xs text-[var(--ne-slate)]">
+                {{ record.isManual ? 'Registro manual' : 'Registro automatico' }}
+              </small>
+            </div>
           </li>
         </ul>
 
         <ng-template #emptyAttendance>
-          <p class="dashboard-page__empty">Todavía no hay asistencias recientes para mostrar.</p>
+          <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+            Todavia no hay asistencias recientes para mostrar.
+          </p>
         </ng-template>
       </article>
 
-      <article class="surface-card dashboard-page__history-card">
-        <div class="dashboard-page__section-head">
-          <div class="section-copy">
-            <span class="pill-chip">Incidencias</span>
-            <h2>Seguimiento reciente</h2>
-          </div>
+      <article class="surface-card grid gap-4 p-5">
+        <div class="grid gap-1">
+          <span class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[var(--ne-brand)]">
+            Incidencias
+          </span>
+          <h2 class="m-0 font-semibold tracking-[-0.03em] text-[var(--ne-ink)]">
+            Seguimiento reciente
+          </h2>
         </div>
 
-        <ul *ngIf="data.recentIncidents.length; else emptyIncidents" class="dashboard-page__list">
-          <li *ngFor="let incident of data.recentIncidents">
-            <div>
-              <strong>{{ incident.incidentTypeName }}</strong>
-              <small>
+        <ul *ngIf="data.recentIncidents.length; else emptyIncidents" class="grid gap-3">
+          <li
+            *ngFor="let incident of data.recentIncidents"
+            class="grid gap-3 rounded-[24px] border border-[var(--ne-line)] bg-white/74 p-4 sm:grid-cols-[minmax(0,1fr)_auto]"
+          >
+            <div class="grid gap-1">
+              <strong class="text-sm font-semibold text-[var(--ne-ink)]">
+                {{ incident.incidentTypeName }}
+              </strong>
+              <small class="text-xs leading-5 text-[var(--ne-slate)]">
                 {{
                   formatLocalDate(incident.incidentDate, data.timeZone, {
                     weekday: 'short',
@@ -181,12 +325,18 @@
                 }}
               </small>
             </div>
-            <span>{{ incident.isApproved ? 'Aprobada' : 'Pendiente' }}</span>
+
+            <p-tag
+              [value]="incident.isApproved ? 'Aprobada' : 'Pendiente'"
+              [severity]="incident.isApproved ? 'success' : 'warn'"
+            ></p-tag>
           </li>
         </ul>
 
         <ng-template #emptyIncidents>
-          <p class="dashboard-page__empty">No hay incidencias recientes para este perfil.</p>
+          <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+            No hay incidencias recientes para este perfil.
+          </p>
         </ng-template>
       </article>
     </section>

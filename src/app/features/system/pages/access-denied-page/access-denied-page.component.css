@@ -2,22 +2,23 @@
   display: block;
 }
 
-.system-page {
+.system-page-shell {
+  min-height: 100dvh;
   display: grid;
-  gap: 1.25rem;
+  place-items: center;
+  padding: 2rem 1.25rem;
+}
+
+.system-page {
+  width: min(100%, 36rem);
   padding: 1.5rem;
-}
-
-.system-page h1 {
-  font-size: 1.8rem;
-}
-
-.system-page p {
-  color: var(--ne-slate);
+  display: grid;
+  gap: 1.5rem;
 }
 
 .system-page__link {
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-decoration: none;
 }

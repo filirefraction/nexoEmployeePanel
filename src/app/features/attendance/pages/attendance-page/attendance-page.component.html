@@ -1,132 +1,244 @@
-<section class="attendance-page">
-  <article class="surface-card attendance-page__hero">
-    <div class="section-copy">
+<section class="grid gap-4">
+  <article class="surface-card grid gap-5 p-5 sm:p-6">
+    <div class="grid gap-3">
       <span class="pill-chip">Asistencia</span>
-      <h1>Tu jornada</h1>
-      <p>
-        Registra tu entrada o salida y consulta tu historial reciente de asistencia desde un solo
-        lugar.
-      </p>
-    </div>
-
-    <div class="attendance-page__actions">
-      <button
-        class="action-button action-button--primary"
-        type="button"
-        [disabled]="isActionInFlight() || !canCheckIn()"
-        (click)="submitCheckIn()"
-      >
-        {{ isActionInFlight() ? 'Procesando...' : 'Registrar check-in' }}
-      </button>
-      <button
-        class="action-button action-button--secondary"
-        type="button"
-        [disabled]="isActionInFlight() || !canCheckOut()"
-        (click)="submitCheckOut()"
-      >
-        {{ isActionInFlight() ? 'Procesando...' : 'Registrar check-out' }}
-      </button>
-    </div>
-
-    <div class="attendance-page__status">
-      <strong>{{ attendanceStatusLabel() }}</strong>
-      <p>{{ attendanceActionHint() }}</p>
-    </div>
-
-    <p *ngIf="successMessage()" class="attendance-page__alert attendance-page__alert--success">
-      {{ successMessage() }}
-    </p>
-    <p *ngIf="errorMessage()" class="attendance-page__alert attendance-page__alert--error">
-      {{ errorMessage() }}
-    </p>
-  </article>
-
-  <article class="surface-card attendance-page__history-card">
-    <div class="attendance-page__section-head">
-      <div class="section-copy">
-        <span class="pill-chip">Historial</span>
-        <h2>Movimientos recientes</h2>
+      <div class="grid gap-2">
+        <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+          Registra tu entrada o salida y consulta tu historial reciente.
+        </p>
       </div>
     </div>
 
-    <form class="attendance-page__filters" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
-      <label>
-        <span>Desde</span>
-        <input type="date" formControlName="fromDate" />
+    <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+      <div class="grid gap-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <p-tag
+            [value]="attendanceStatusLabel()"
+            [severity]="canCheckOut() ? 'success' : canCheckIn() ? 'warn' : 'secondary'"
+          ></p-tag>
+          <p-tag
+            *ngIf="latestKnownRecord()?.isManual"
+            value="Registro manual"
+            severity="info"
+          ></p-tag>
+        </div>
+
+        <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+          {{ attendanceActionHint() }}
+        </p>
+
+        <div
+          *ngIf="latestKnownRecord() as record"
+          class="grid gap-2 border-t border-[var(--ne-line)] pt-3"
+        >
+          <div class="flex items-center justify-between gap-3">
+            <strong class="text-sm font-semibold text-[var(--ne-ink)]">
+              Ultimo movimiento
+            </strong>
+            <p-tag
+              [value]="resolveRecordStatus(record)"
+              [severity]="resolveRecordStatusSeverity(record)"
+            ></p-tag>
+          </div>
+
+          <div class="grid gap-1 text-sm text-[var(--ne-slate)]">
+            <span>{{ formatAttendanceDate(record) }}</span>
+            <span>
+              Entrada: {{ formatAttendanceTime(record.checkInDate, record.timeZone) }}
+            </span>
+            <span>
+              Salida:
+              {{
+                record.checkOutDate
+                  ? formatAttendanceTime(record.checkOutDate, record.timeZone)
+                  : 'Pendiente'
+              }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2 lg:w-[19rem] lg:grid-cols-1">
+        <button
+          pButton
+          type="button"
+          severity="secondary"
+          class="w-full !border-[rgba(15,118,110,0.16)] !bg-[rgba(15,118,110,0.10)] !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.14)]"
+          [loading]="isActionInFlight() && canCheckIn()"
+          [disabled]="isActionInFlight() || !canCheckIn()"
+          (click)="submitCheckIn()"
+        >
+          Registrar entrada
+        </button>
+
+        <button
+          pButton
+          type="button"
+          severity="secondary"
+          class="w-full !border-[var(--ne-brand)] !bg-transparent !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.04)]"
+          [loading]="isActionInFlight() && canCheckOut()"
+          [disabled]="isActionInFlight() || !canCheckOut()"
+          (click)="submitCheckOut()"
+        >
+          Registrar salida
+        </button>
+      </div>
+    </div>
+
+    <div class="grid gap-3">
+      <p-message *ngIf="successMessage()" severity="success" [text]="successMessage() ?? ''"></p-message>
+      <p-message *ngIf="errorMessage()" severity="error" [text]="errorMessage() ?? ''"></p-message>
+    </div>
+  </article>
+
+  <article class="surface-card grid gap-4 p-5 sm:p-6">
+    <div class="grid gap-1">
+      <span class="pill-chip">Historial</span>
+    </div>
+
+    <form class="grid gap-3 lg:grid-cols-[repeat(3,minmax(0,1fr))_auto]" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+      <label class="grid gap-1.5">
+        <span class="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--ne-slate)]">
+          Desde
+        </span>
+        <p-datepicker
+          inputId="attendance-from-date"
+          formControlName="fromDate"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          iconDisplay="input"
+          appendTo="body"
+          class="w-full"
+        ></p-datepicker>
       </label>
 
-      <label>
-        <span>Hasta</span>
-        <input type="date" formControlName="toDate" />
+      <label class="grid gap-1.5">
+        <span class="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--ne-slate)]">
+          Hasta
+        </span>
+        <p-datepicker
+          inputId="attendance-to-date"
+          formControlName="toDate"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          iconDisplay="input"
+          appendTo="body"
+          class="w-full"
+        ></p-datepicker>
       </label>
 
-      <label>
-        <span>Tipo</span>
-        <select formControlName="isManual">
-          <option value="">Todos</option>
-          <option value="false">Automáticos</option>
-          <option value="true">Manuales</option>
-        </select>
+      <label class="grid gap-1.5">
+        <span class="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--ne-slate)]">
+          Tipo de registro
+        </span>
+        <p-select
+          inputId="attendance-type-filter"
+          formControlName="isManual"
+          [options]="manualFilterOptions"
+          optionLabel="label"
+          optionValue="value"
+          appendTo="body"
+          class="w-full"
+        ></p-select>
       </label>
 
-      <div class="attendance-page__filter-actions">
-        <button class="action-button action-button--secondary" type="button" (click)="resetFilters()">
+      <div class="grid gap-3 sm:grid-cols-2 lg:min-w-[15rem] lg:grid-cols-2 lg:self-end">
+        <button pButton type="button" severity="secondary" (click)="resetFilters()">
           Limpiar
         </button>
-        <button class="action-button action-button--primary" type="submit">Aplicar</button>
+        <button pButton type="submit">Aplicar</button>
       </div>
     </form>
 
-    <div *ngIf="isLoading()" class="attendance-page__empty">
+    <div *ngIf="isLoading()" class="rounded-[24px] border border-dashed border-[var(--ne-line)] bg-white/72 px-4 py-5 text-sm text-[var(--ne-slate)]">
       Estamos cargando tu historial de asistencia.
     </div>
 
-    <div *ngIf="!isLoading() && !records().length" class="attendance-page__empty">
-      Todavía no hay registros de asistencia para los filtros seleccionados.
+    <div *ngIf="!isLoading() && !records().length" class="rounded-[24px] border border-dashed border-[var(--ne-line)] bg-white/72 px-4 py-5 text-sm text-[var(--ne-slate)]">
+      Todavia no hay registros de asistencia para los filtros seleccionados.
     </div>
 
-    <ul *ngIf="!isLoading() && records().length" class="attendance-page__list">
-      <li *ngFor="let record of records()">
-        <div>
-          <strong>{{ formatAttendanceDate(record) }}</strong>
-          <small>
-            Entrada:
-            {{
-              formatAttendanceTime(record.checkInDate, record.timeZone)
-            }}
-            · Salida:
-            {{
-              record.checkOutDate ? formatAttendanceTime(record.checkOutDate, record.timeZone) : 'Pendiente'
-            }}
-          </small>
+    <ul *ngIf="!isLoading() && records().length" class="grid gap-3">
+      <li
+        *ngFor="let record of records()"
+        class="grid gap-4 rounded-[24px] border border-[var(--ne-line)] bg-white/78 p-4 sm:grid-cols-[minmax(0,1fr)_auto]"
+      >
+        <div class="grid gap-2">
+          <div class="grid gap-1">
+            <strong class="text-sm font-semibold text-[var(--ne-ink)]">
+              {{ formatAttendanceDate(record) }}
+            </strong>
+            <small class="text-xs leading-5 text-[var(--ne-slate)]">
+              Entrada:
+              {{ formatAttendanceTime(record.checkInDate, record.timeZone) }}
+            </small>
+            <small class="text-xs leading-5 text-[var(--ne-slate)]">
+              Salida:
+              {{
+                record.checkOutDate
+                  ? formatAttendanceTime(record.checkOutDate, record.timeZone)
+                  : 'Pendiente'
+              }}
+            </small>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <p-tag
+              [value]="resolveRecordStatus(record)"
+              [severity]="resolveRecordStatusSeverity(record)"
+            ></p-tag>
+            <p-tag *ngIf="record.isLate" value="Con retardo" severity="warn"></p-tag>
+            <p-tag *ngIf="record.isManual" value="Registro manual" severity="info"></p-tag>
+          </div>
         </div>
 
-        <div class="attendance-page__metrics">
-          <span>{{ formatMinutes(record.workedMinutes) }}</span>
-          <small *ngIf="record.isLate">Retardo: {{ record.lateMinutes }} min</small>
-          <small *ngIf="record.isManual">Manual</small>
+        <div class="grid content-start gap-1 text-left sm:text-right">
+          <strong class="text-sm font-semibold text-[var(--ne-ink)]">
+            {{ formatMinutes(record.workedMinutes) }}
+          </strong>
+          <small class="text-xs text-[var(--ne-slate)]">
+            Retardo: {{ record.lateMinutes }} min
+          </small>
+          <small class="text-xs text-[var(--ne-slate)]">
+            Extra: {{ record.overtimeMinutes }} min
+          </small>
         </div>
       </li>
     </ul>
 
-    <div *ngIf="pagination() as page" class="attendance-page__pagination">
-      <button
-        class="action-button action-button--secondary"
-        type="button"
-        [disabled]="!page.hasPreviousPage"
-        (click)="goToPage(page.pageNumber - 1)"
-      >
-        Anterior
-      </button>
-      <span>Página {{ page.pageNumber }} de {{ page.totalPages }}</span>
-      <button
-        class="action-button action-button--secondary"
-        type="button"
-        [disabled]="!page.hasNextPage"
-        (click)="goToPage(page.pageNumber + 1)"
-      >
-        Siguiente
-      </button>
+    <div *ngIf="pagination() as page" class="flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-[var(--ne-line)] bg-white/72 px-4 py-4">
+      <span class="text-sm text-[var(--ne-slate)]">
+        Pagina {{ page.pageNumber }} de {{ page.totalPages }}
+      </span>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <button
+          pButton
+          type="button"
+          severity="secondary"
+          [disabled]="!page.hasPreviousPage"
+          (click)="goToPage(page.pageNumber - 1)"
+        >
+          Anterior
+        </button>
+        <button
+          pButton
+          type="button"
+          severity="secondary"
+          [disabled]="!page.hasNextPage"
+          (click)="goToPage(page.pageNumber + 1)"
+        >
+          Siguiente
+        </button>
+      </div>
     </div>
+
+    <a
+      routerLink="/app/inicio"
+      class="inline-flex w-fit items-center gap-2 text-sm font-semibold text-[var(--ne-brand)] underline-offset-4 hover:underline"
+    >
+      <i class="pi pi-arrow-left text-xs"></i>
+      Volver al inicio
+    </a>
   </article>
 </section>

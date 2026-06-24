@@ -1,231 +1,349 @@
-<section class="vacations-page">
-  <article class="surface-card vacations-page__request-card">
-    <div class="section-copy">
+<section class="grid gap-4">
+  <article class="surface-card grid gap-5 p-5 sm:p-6">
+    <div class="grid gap-3">
       <span class="pill-chip">Vacaciones</span>
-      <h1>Nueva solicitud</h1>
-      <p>Solicita tus días y consulta el estado de tus peticiones desde esta misma pantalla.</p>
+      <div class="grid gap-2">
+        <h2 class="m-0 font-semibold tracking-[-0.04em] text-[var(--ne-ink)]">
+          Nueva solicitud
+        </h2>
+        <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+          Solicita tus dias y revisa la vista previa antes de enviar.
+        </p>
+      </div>
     </div>
 
-    <form class="vacations-page__form" [formGroup]="requestForm" (ngSubmit)="submitRequest()">
-      <label>
-        <span>Desde</span>
-        <input type="date" formControlName="fromDate" />
-      </label>
+    <form class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]" [formGroup]="requestForm" (ngSubmit)="submitRequest()">
+      <div class="grid gap-4">
+        <div class="grid gap-1.5">
+          <p-floatlabel variant="on">
+            <p-datepicker
+              inputId="vacation-request-from-date"
+              formControlName="fromDate"
+              dateFormat="dd/mm/yy"
+              [showIcon]="true"
+              iconDisplay="input"
+              appendTo="body"
+              class="w-full"
+            ></p-datepicker>
+            <label for="vacation-request-from-date">Desde</label>
+          </p-floatlabel>
+          @if (requestForm.controls.fromDate.invalid && requestForm.controls.fromDate.touched) {
+            <small class="text-xs font-medium text-[var(--ne-accent)]">
+              La fecha de inicio es obligatoria.
+            </small>
+          }
+        </div>
 
-      <label>
-        <span>Días solicitados</span>
-        <input type="number" min="1" step="1" formControlName="requestedDays" />
-      </label>
+        <div class="grid gap-1.5">
+          <p-floatlabel variant="on">
+            <p-inputnumber
+              inputId="vacation-request-days"
+              formControlName="requestedDays"
+              [min]="1"
+              [useGrouping]="false"
+              [showButtons]="true"
+              [fluid]="true"
+            ></p-inputnumber>
+            <label for="vacation-request-days">Dias solicitados</label>
+          </p-floatlabel>
+          @if (requestForm.controls.requestedDays.invalid && requestForm.controls.requestedDays.touched) {
+            <small class="text-xs font-medium text-[var(--ne-accent)]">
+              Ingresa al menos un dia.
+            </small>
+          }
+        </div>
 
-      <label class="vacations-page__reason">
-        <span>Motivo</span>
-        <textarea formControlName="reason" rows="4" placeholder="Opcional"></textarea>
-      </label>
+        <div class="grid gap-1.5">
+          <p-floatlabel variant="on">
+            <textarea
+              pTextarea
+              id="vacation-request-reason"
+              rows="4"
+              class="w-full"
+              formControlName="reason"
+            ></textarea>
+            <label for="vacation-request-reason">Motivo</label>
+          </p-floatlabel>
+          <small class="text-xs text-[var(--ne-slate)]">Opcional.</small>
+        </div>
 
-      <div class="vacations-page__request-actions">
-        <button
-          class="action-button action-button--secondary"
-          type="button"
-          [disabled]="requestForm.invalid || isPreviewLoading()"
-          (click)="calculatePreview()"
-        >
-          {{ isPreviewLoading() ? 'Calculando...' : 'Calcular vista previa' }}
-        </button>
-        <button
-          class="action-button action-button--primary"
-          type="submit"
-          [disabled]="requestForm.invalid || isActionInFlight() || !preview()"
-        >
-          {{ isActionInFlight() ? 'Enviando...' : 'Enviar solicitud' }}
-        </button>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <button
+            pButton
+            type="button"
+            severity="secondary"
+            class="w-full !border-[var(--ne-brand)] !bg-transparent !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.04)]"
+            [loading]="isPreviewLoading()"
+            [disabled]="requestForm.invalid || isPreviewLoading()"
+            (click)="calculatePreview()"
+          >
+            Calcular vista previa
+          </button>
+          <button
+            pButton
+            type="submit"
+            class="w-full !border-[rgba(15,118,110,0.16)] !bg-[rgba(15,118,110,0.10)] !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.14)]"
+            [loading]="isActionInFlight()"
+            [disabled]="requestForm.invalid || isActionInFlight() || !preview()"
+          >
+            Enviar solicitud
+          </button>
+        </div>
+      </div>
+
+      <div class="grid gap-4 rounded-[28px] border border-[var(--ne-line)] bg-white/74 p-4">
+        <div class="grid gap-1">
+          <span class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[var(--ne-brand)]">
+            Vista previa
+          </span>
+          <h2 class="m-0 font-semibold tracking-[-0.03em] text-[var(--ne-ink)]">
+            Calculo del periodo
+          </h2>
+        </div>
+
+        <ng-container *ngIf="preview() as vacationPreview; else emptyPreview">
+          <div class="grid gap-0 divide-y divide-[var(--ne-line)] rounded-[20px] border border-[var(--ne-line)] bg-white/80">
+            <div class="grid gap-1 p-3">
+              <strong class="text-sm font-semibold text-[var(--ne-ink)]">Periodo</strong>
+              <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+                {{ vacationPreview.fromDate | date: 'fullDate' : undefined : 'es-MX' }}<br />
+                {{ vacationPreview.toDate | date: 'fullDate' : undefined : 'es-MX' }}
+              </p>
+            </div>
+
+            <div class="grid gap-1 p-3">
+              <strong class="text-sm font-semibold text-[var(--ne-ink)]">Dias contados</strong>
+              <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+                {{ vacationPreview.countedVacationDays }} de {{ vacationPreview.requestedDays }}
+              </p>
+            </div>
+
+            <div class="grid gap-1 p-3">
+              <strong class="text-sm font-semibold text-[var(--ne-ink)]">Regreso</strong>
+              <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+                {{ vacationPreview.returnToWorkDate | date: 'fullDate' : undefined : 'es-MX' }}
+              </p>
+            </div>
+          </div>
+
+          <ul class="grid gap-3">
+            <li
+              *ngFor="let day of vacationPreview.days"
+              class="grid gap-3 rounded-[20px] border border-[var(--ne-line)] bg-white/78 p-3 sm:grid-cols-[minmax(0,1fr)_auto]"
+            >
+              <div class="grid gap-1">
+                <strong class="text-sm font-semibold text-[var(--ne-ink)]">
+                  {{ day.date | date: 'EEE d MMM y' : undefined : 'es-MX' }}
+                </strong>
+                <small class="text-xs text-[var(--ne-slate)]">
+                  {{ resolvePreviewDayLabel(day) }}
+                </small>
+              </div>
+
+              <div class="grid gap-1 text-left sm:text-right">
+                <p-tag
+                  [value]="day.countsAsVacationDay ? 'Cuenta' : 'No cuenta'"
+                  [severity]="day.countsAsVacationDay ? 'success' : 'secondary'"
+                ></p-tag>
+                <small class="text-xs text-[var(--ne-slate)]">{{ day.description }}</small>
+              </div>
+            </li>
+          </ul>
+
+          <p class="m-0 text-xs leading-5 text-[var(--ne-slate)]">
+            La fecha final se confirmara al enviar la solicitud.
+          </p>
+        </ng-container>
+
+        <ng-template #emptyPreview>
+          <div class="rounded-[20px] border border-dashed border-[var(--ne-line)] bg-white/72 px-4 py-5 text-sm text-[var(--ne-slate)]">
+            Calcula la vista previa para conocer el periodo y tu regreso estimado.
+          </div>
+        </ng-template>
       </div>
     </form>
 
-    <article *ngIf="preview() as vacationPreview" class="vacations-page__preview">
-      <div class="vacations-page__preview-summary">
-        <div>
-          <strong>Periodo calculado</strong>
-          <p>
-            {{ vacationPreview.fromDate | date: 'fullDate' : undefined : 'es-MX' }}<br />
-            {{ vacationPreview.toDate | date: 'fullDate' : undefined : 'es-MX' }}
-          </p>
-        </div>
-        <div>
-          <strong>Días contados</strong>
-          <p>{{ vacationPreview.countedVacationDays }} de {{ vacationPreview.requestedDays }}</p>
-        </div>
-        <div>
-          <strong>Regreso estimado</strong>
-          <p>{{ vacationPreview.returnToWorkDate | date: 'fullDate' : undefined : 'es-MX' }}</p>
-        </div>
-      </div>
-
-      <ul class="vacations-page__preview-days">
-        <li *ngFor="let day of vacationPreview.days">
-          <div>
-            <strong>
-              {{ day.date | date: 'EEE d MMM y' : undefined : 'es-MX' }}
-            </strong>
-            <small>{{ resolvePreviewDayLabel(day) }}</small>
-          </div>
-          <div class="vacations-page__preview-meta">
-            <span
-              class="vacations-page__status"
-              [class]="day.countsAsVacationDay ? 'vacations-page__status--success' : 'vacations-page__status--muted'"
-            >
-              {{ day.countsAsVacationDay ? 'Cuenta' : 'No cuenta' }}
-            </span>
-            <small>{{ day.description }}</small>
-          </div>
-        </li>
-      </ul>
-
-      <p class="vacations-page__preview-note">
-        El backend recalculará estas fechas al guardar la solicitud para evitar cambios manuales
-        desde la interfaz.
-      </p>
-    </article>
-
-    <p *ngIf="successMessage()" class="vacations-page__alert vacations-page__alert--success">
-      {{ successMessage() }}
-    </p>
-    <p *ngIf="errorMessage()" class="vacations-page__alert vacations-page__alert--error">
-      {{ errorMessage() }}
-    </p>
+    <div class="grid gap-3">
+      <p-message *ngIf="successMessage()" severity="success" [text]="successMessage() ?? ''"></p-message>
+      <p-message *ngIf="errorMessage()" severity="error" [text]="errorMessage() ?? ''"></p-message>
+    </div>
   </article>
 
-  <article class="surface-card vacations-page__history-card">
-    <div class="vacations-page__section-head">
-      <div class="section-copy">
-        <span class="pill-chip">Historial</span>
-        <h2>Solicitudes recientes</h2>
-      </div>
+  <article class="surface-card grid gap-4 p-5 sm:p-6">
+    <div class="grid gap-1">
+      <span class="pill-chip">Historial</span>
     </div>
 
-    <form class="vacations-page__filters" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
-      <label>
-        <span>Desde</span>
-        <input type="date" formControlName="fromDate" />
-      </label>
+    <form class="grid gap-3 lg:grid-cols-[repeat(2,minmax(0,1fr))_auto]" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+      <div class="grid gap-1.5">
+        <p-floatlabel variant="on">
+          <p-datepicker
+            inputId="vacations-filter-from-date"
+            formControlName="fromDate"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            iconDisplay="input"
+            appendTo="body"
+            class="w-full"
+          ></p-datepicker>
+          <label for="vacations-filter-from-date">Desde</label>
+        </p-floatlabel>
+      </div>
 
-      <label>
-        <span>Hasta</span>
-        <input type="date" formControlName="toDate" />
-      </label>
+      <div class="grid gap-1.5">
+        <p-floatlabel variant="on">
+          <p-datepicker
+            inputId="vacations-filter-to-date"
+            formControlName="toDate"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            iconDisplay="input"
+            appendTo="body"
+            class="w-full"
+          ></p-datepicker>
+          <label for="vacations-filter-to-date">Hasta</label>
+        </p-floatlabel>
+      </div>
 
-      <div class="vacations-page__filter-actions">
-        <button class="action-button action-button--secondary" type="button" (click)="resetFilters()">
+      <div class="grid gap-3 sm:grid-cols-2 lg:min-w-[15rem] lg:grid-cols-2 lg:self-end">
+        <button pButton type="button" severity="secondary" (click)="resetFilters()">
           Limpiar
         </button>
-        <button class="action-button action-button--primary" type="submit">Aplicar</button>
+        <button pButton type="submit">Aplicar</button>
       </div>
     </form>
 
-    <div *ngIf="isLoading()" class="vacations-page__empty">
+    <div *ngIf="isLoading()" class="rounded-[24px] border border-dashed border-[var(--ne-line)] bg-white/72 px-4 py-5 text-sm text-[var(--ne-slate)]">
       Estamos cargando tus solicitudes de vacaciones.
     </div>
 
-    <div *ngIf="!isLoading() && !requests().length" class="vacations-page__empty">
-      Todavía no hay solicitudes para los filtros seleccionados.
+    <div *ngIf="!isLoading() && !requests().length" class="rounded-[24px] border border-dashed border-[var(--ne-line)] bg-white/72 px-4 py-5 text-sm text-[var(--ne-slate)]">
+      Todavia no hay solicitudes para los filtros seleccionados.
     </div>
 
-    <ul *ngIf="!isLoading() && requests().length" class="vacations-page__list">
+    <ul *ngIf="!isLoading() && requests().length" class="grid gap-3">
       <li *ngFor="let request of requests()">
-        <button type="button" class="vacations-page__row" (click)="viewRequest(request.id)">
-          <div>
-            <strong>
+        <button
+          type="button"
+          class="grid w-full gap-3 rounded-[24px] border border-[var(--ne-line)] bg-white/78 p-4 text-left sm:grid-cols-[minmax(0,1fr)_auto]"
+          (click)="viewRequest(request.id)"
+        >
+          <div class="grid gap-1">
+            <strong class="text-sm font-semibold text-[var(--ne-ink)]">
               {{ request.fromDate | date: 'd MMM' : undefined : 'es-MX' }}
               -
               {{ request.toDate | date: 'd MMM y' : undefined : 'es-MX' }}
             </strong>
-            <small>
-              {{ request.requestedDays | number: '1.0-2' : 'es-MX' }} día(s) ·
+            <small class="text-xs leading-5 text-[var(--ne-slate)]">
+              {{ request.requestedDays | number: '1.0-2' : 'es-MX' }} dia(s) ·
               {{ request.requestedDate | date: 'd MMM y, h:mm a' : undefined : 'es-MX' }}
             </small>
           </div>
-          <span class="vacations-page__status" [class]="getStatusTone(request)">
-            {{ getStatusLabel(request) }}
-          </span>
+
+          <div class="grid content-start justify-items-start gap-2 sm:justify-items-end">
+            <p-tag [value]="getStatusLabel(request)" [severity]="getStatusSeverity(request)"></p-tag>
+          </div>
         </button>
       </li>
     </ul>
 
-    <div *ngIf="pagination() as page" class="vacations-page__pagination">
-      <button
-        class="action-button action-button--secondary"
-        type="button"
-        [disabled]="!page.hasPreviousPage"
-        (click)="goToPage(page.pageNumber - 1)"
-      >
-        Anterior
-      </button>
-      <span>Página {{ page.pageNumber }} de {{ page.totalPages }}</span>
-      <button
-        class="action-button action-button--secondary"
-        type="button"
-        [disabled]="!page.hasNextPage"
-        (click)="goToPage(page.pageNumber + 1)"
-      >
-        Siguiente
-      </button>
+    <div *ngIf="pagination() as page" class="flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-[var(--ne-line)] bg-white/72 px-4 py-4">
+      <span class="text-sm text-[var(--ne-slate)]">
+        Pagina {{ page.pageNumber }} de {{ page.totalPages }}
+      </span>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <button
+          pButton
+          type="button"
+          severity="secondary"
+          [disabled]="!page.hasPreviousPage"
+          (click)="goToPage(page.pageNumber - 1)"
+        >
+          Anterior
+        </button>
+        <button
+          pButton
+          type="button"
+          severity="secondary"
+          [disabled]="!page.hasNextPage"
+          (click)="goToPage(page.pageNumber + 1)"
+        >
+          Siguiente
+        </button>
+      </div>
     </div>
   </article>
 
-  <article *ngIf="selectedRequest() as detail" class="surface-card vacations-page__detail-card">
-    <div class="vacations-page__section-head">
-      <div class="section-copy">
-        <span class="pill-chip">Detalle</span>
-        <h2>Solicitud seleccionada</h2>
+  <article *ngIf="selectedRequest() as detail" class="surface-card grid gap-4 p-5 sm:p-6">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div class="grid gap-1">
+        <span class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[var(--ne-brand)]">
+          Detalle
+        </span>
+        <h2 class="m-0 text-2xl font-semibold tracking-[-0.03em] text-[var(--ne-ink)]">
+          Solicitud seleccionada
+        </h2>
       </div>
 
-      <button class="action-button action-button--secondary" type="button" (click)="closeDetail()">
+      <button pButton type="button" severity="secondary" (click)="closeDetail()">
         Cerrar
       </button>
     </div>
 
-    <div *ngIf="isDetailLoading()" class="vacations-page__empty">
-      Estamos cargando el detalle de la solicitud.
-    </div>
+      <div *ngIf="isDetailLoading()" class="rounded-[24px] border border-dashed border-[var(--ne-line)] bg-white/72 px-4 py-5 text-sm text-[var(--ne-slate)]">
+        Estamos cargando el detalle de la solicitud.
+      </div>
 
-    <div *ngIf="!isDetailLoading()" class="vacations-page__detail-grid">
-      <div>
-        <strong>Rango solicitado</strong>
-        <p>
-          {{ detail.fromDate | date: 'fullDate' : undefined : 'es-MX' }}
-          <br />
+    <div *ngIf="!isDetailLoading()" class="grid gap-0 divide-y divide-[var(--ne-line)] rounded-[20px] border border-[var(--ne-line)] bg-white/76">
+      <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+        <strong class="text-sm font-semibold text-[var(--ne-ink)]">Rango</strong>
+        <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+          {{ detail.fromDate | date: 'fullDate' : undefined : 'es-MX' }}<br />
           {{ detail.toDate | date: 'fullDate' : undefined : 'es-MX' }}
         </p>
       </div>
 
-      <div>
-        <strong>Días solicitados</strong>
-        <p>{{ detail.requestedDays | number: '1.0-2' : 'es-MX' }}</p>
+      <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+        <strong class="text-sm font-semibold text-[var(--ne-ink)]">Dias solicitados</strong>
+        <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+          {{ detail.requestedDays | number: '1.0-2' : 'es-MX' }}
+        </p>
       </div>
 
-      <div>
-        <strong>Estatus</strong>
-        <p>{{ getStatusLabel(detail) }}</p>
+      <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+        <strong class="text-sm font-semibold text-[var(--ne-ink)]">Estatus</strong>
+        <div class="pt-1">
+          <p-tag [value]="getStatusLabel(detail)" [severity]="getStatusSeverity(detail)"></p-tag>
+        </div>
       </div>
 
-      <div>
-        <strong>Motivo</strong>
-        <p>{{ detail.reason || 'Sin motivo capturado.' }}</p>
+      <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+        <strong class="text-sm font-semibold text-[var(--ne-ink)]">Motivo</strong>
+        <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+          {{ detail.reason || 'Sin motivo.' }}
+        </p>
       </div>
 
-      <div *ngIf="detail.rejectedReason">
-        <strong>Motivo de rechazo</strong>
-        <p>{{ detail.rejectedReason }}</p>
+      <div *ngIf="detail.rejectedReason" class="grid gap-1 border-t border-[rgba(180,35,24,0.14)] bg-[rgba(180,35,24,0.04)] p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+        <strong class="text-sm font-semibold text-[var(--ne-ink)]">Motivo de rechazo</strong>
+        <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+          {{ detail.rejectedReason }}
+        </p>
       </div>
     </div>
 
-    <button
-      *ngIf="!isDetailLoading() && canCancel(detail)"
-      class="action-button action-button--secondary"
-      type="button"
-      [disabled]="isActionInFlight()"
-      (click)="cancelSelected()"
-    >
-      {{ isActionInFlight() ? 'Procesando...' : 'Cancelar solicitud' }}
-    </button>
+    <div *ngIf="!isDetailLoading() && canCancel(detail)" class="flex flex-wrap gap-3">
+      <button
+        pButton
+        type="button"
+        severity="secondary"
+        [loading]="isActionInFlight()"
+        [disabled]="isActionInFlight()"
+        (click)="cancelSelected()"
+      >
+        Cancelar solicitud
+      </button>
+    </div>
   </article>
 </section>

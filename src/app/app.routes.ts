@@ -28,30 +28,16 @@ export const routes: Routes = [
     path: 'session-expired',
     canActivate: [guestGuard],
     loadComponent: () =>
-      import('./core/layout/auth-shell/auth-shell.component').then((m) => m.AuthShellComponent),
-    children: [
-      {
-        path: '',
-        loadComponent: () =>
-          import('./features/system/pages/session-expired-page/session-expired-page.component').then(
-            (m) => m.SessionExpiredPageComponent
-          )
-      }
-    ]
+      import('./features/system/pages/session-expired-page/session-expired-page.component').then(
+        (m) => m.SessionExpiredPageComponent
+      )
   },
   {
     path: 'access-denied',
     loadComponent: () =>
-      import('./core/layout/auth-shell/auth-shell.component').then((m) => m.AuthShellComponent),
-    children: [
-      {
-        path: '',
-        loadComponent: () =>
-          import('./features/system/pages/access-denied-page/access-denied-page.component').then(
-            (m) => m.AccessDeniedPageComponent
-          )
-      }
-    ]
+      import('./features/system/pages/access-denied-page/access-denied-page.component').then(
+        (m) => m.AccessDeniedPageComponent
+      )
   },
   {
     path: 'app',

@@ -1,24 +1,81 @@
 @import "tailwindcss";
+@import "primeicons/primeicons.css";
 
 :root {
   color-scheme: light;
-  --ne-sand: #f7f1e3;
-  --ne-cream: #fffaf0;
-  --ne-ink: #112031;
-  --ne-slate: #3b4a5a;
-  --ne-line: rgba(17, 32, 49, 0.12);
-  --ne-brand: #0f766e;
-  --ne-brand-strong: #115e59;
+  font-family:
+    Inter,
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+
+  --nexo-font-family-base: "Inter", system-ui, sans-serif;
+  --nexo-font-size-xs: 0.8125rem;
+  --nexo-font-size-sm: 0.875rem;
+  --nexo-font-size-md: 1rem;
+  --nexo-line-height-base: 1.45;
+  --nexo-letter-spacing-brand: 0.18em;
+
+  --nexo-color-graphene-black: #171a1f;
+  --nexo-color-graphene-gray: #1f2329;
+  --nexo-color-petroleum-700: #0f766e;
+  --nexo-color-petroleum-600: #0d9488;
+  --nexo-color-neutral-500: #8b949e;
+  --nexo-color-white: #ffffff;
+  --nexo-color-bg-app: #f7f9fb;
+  --nexo-color-bg-canvas: #f5f7fa;
+  --nexo-color-surface-1: #ffffff;
+  --nexo-color-surface-2: #f6f8fb;
+  --nexo-color-border-soft: #e3e8ee;
+  --nexo-color-border-default: #d7dee7;
+  --nexo-color-border-strong: #c3cdd8;
+  --nexo-color-text-primary: #171a1f;
+  --nexo-color-text-secondary: #5b6470;
+  --nexo-color-text-muted: #7a8592;
+  --nexo-color-accent: #0f766e;
+  --nexo-color-accent-hover: #0d9488;
+  --nexo-color-accent-soft: #e7f6f4;
+  --nexo-color-accent-strong: #0b5e57;
+  --nexo-color-danger: #b42318;
+  --nexo-color-warning: #b7791f;
+  --nexo-color-success: #0f766e;
+
+  --nexo-radius-sm: 0.5rem;
+  --nexo-radius-md: 0.75rem;
+  --nexo-shadow-sm: 0 4px 12px rgba(16, 24, 40, 0.04);
+  --nexo-shadow-md: 0 10px 24px rgba(16, 24, 40, 0.05);
+  --nexo-shadow-lg: 0 16px 34px rgba(16, 24, 40, 0.06);
+  --nexo-focus-ring-color: rgba(15, 118, 110, 0.22);
+  --nexo-focus-ring: 0 0 0 3px var(--nexo-focus-ring-color);
+
+  --ne-ink: var(--nexo-color-text-primary);
+  --ne-slate: var(--nexo-color-text-secondary);
+  --ne-line: var(--nexo-color-border-soft);
+  --ne-brand: var(--nexo-color-accent);
+  --ne-brand-strong: var(--nexo-color-accent-hover);
   --ne-brand-soft: rgba(15, 118, 110, 0.1);
-  --ne-danger: #b42318;
-  --ne-warning: #b54708;
-  --ne-success: #067647;
-  --ne-surface: rgba(255, 255, 255, 0.86);
-  --ne-shadow: 0 20px 50px rgba(17, 32, 49, 0.1);
-  font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+  --ne-accent: var(--nexo-color-danger);
+  --ne-warning: var(--nexo-color-warning);
+  --ne-success: var(--nexo-color-success);
+  --ne-surface: rgba(255, 255, 255, 0.92);
+  --ne-shadow: var(--nexo-shadow-md);
+
+  --p-floatlabel-color: var(--nexo-color-text-secondary);
+  --p-floatlabel-focus-color: var(--nexo-color-accent-strong);
+  --p-floatlabel-active-color: var(--nexo-color-accent-strong);
+  --p-floatlabel-invalid-color: var(--nexo-color-danger);
+  --p-floatlabel-on-active-background: var(--nexo-color-surface-1);
+  --p-dialog-background: var(--nexo-color-surface-1);
+  --p-dialog-color: var(--nexo-color-text-primary);
+  --p-dialog-border-color: var(--nexo-color-border-soft);
+  --p-dialog-shadow: var(--nexo-shadow-lg);
+
   background:
-    radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 28%),
-    linear-gradient(180deg, #fffef8 0%, var(--ne-sand) 100%);
+    radial-gradient(circle at top left, rgba(13, 148, 136, 0.12), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.08), transparent 24%),
+    linear-gradient(180deg, #fbfdfd 0%, #f2f7f7 100%);
   color: var(--ne-ink);
 }
 
@@ -27,10 +84,19 @@ body {
   min-height: 100%;
 }
 
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   background: transparent;
   color: var(--ne-ink);
+  overscroll-behavior-y: contain;
+  -webkit-tap-highlight-color: transparent;
+  font-family: var(--nexo-font-family-base);
+  line-height: var(--nexo-line-height-base);
 }
 
 *,
@@ -54,34 +120,41 @@ a {
   color: inherit;
 }
 
+::selection {
+  background: rgba(15, 118, 110, 0.18);
+}
+
 .page-shell {
   min-height: 100dvh;
 }
 
 .surface-card {
   border: 1px solid var(--ne-line);
-  border-radius: 24px;
+  border-radius: 28px;
   background: var(--ne-surface);
   box-shadow: var(--ne-shadow);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(16px);
 }
 
 .pill-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.4rem 0.8rem;
-  border-radius: 999px;
-  background: var(--ne-brand-soft);
-  color: var(--ne-brand-strong);
-  font-size: 0.85rem;
-  font-weight: 600;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ne-brand);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 .action-button {
   min-height: 3rem;
   border: 0;
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 0.8rem 1rem;
   font-weight: 700;
 }
@@ -92,7 +165,7 @@ a {
 }
 
 .action-button--secondary {
-  background: rgba(17, 32, 49, 0.06);
+  background: rgba(23, 26, 31, 0.06);
   color: var(--ne-ink);
 }
 
@@ -108,8 +181,82 @@ a {
   margin: 0;
 }
 
+body .p-button {
+  min-height: 2.75rem;
+  padding-inline: 0.95rem;
+  border-radius: var(--nexo-radius-sm);
+  font-size: var(--nexo-font-size-sm);
+  font-weight: 600;
+}
+
+body .p-button .p-button-label,
+body .p-button .p-button-icon {
+  font-size: var(--nexo-font-size-sm);
+}
+
+body .p-button:focus-visible,
+body .p-inputtext:focus,
+body .p-password-input:focus,
+body .p-select:focus-within,
+body .p-inputnumber:focus-within,
+body .p-textarea:focus {
+  box-shadow: var(--nexo-focus-ring);
+}
+
+body .p-inputtext,
+body .p-password-input,
+body .p-select,
+body .p-inputnumber-input,
+body .p-textarea {
+  width: 100%;
+  min-height: 2.75rem;
+  border-color: var(--nexo-color-border-default);
+  border-radius: var(--nexo-radius-sm);
+  background: var(--nexo-color-surface-1) !important;
+  color: var(--nexo-color-text-primary) !important;
+  font-size: 0.95rem;
+}
+
+body .p-inputtext,
+body .p-password-input,
+body .p-inputnumber-input,
+body .p-textarea {
+  padding-block: 0.62rem;
+  padding-inline: 0.82rem;
+}
+
+body .p-select-label,
+body .p-inputnumber-input {
+  padding-block: 0.62rem;
+  padding-inline: 0.82rem;
+  background: transparent !important;
+  color: var(--nexo-color-text-primary) !important;
+}
+
+body .p-inputtext:hover,
+body .p-password-input:hover,
+body .p-select:hover,
+body .p-textarea:hover,
+body .p-inputnumber:hover .p-inputnumber-input {
+  border-color: var(--nexo-color-border-strong);
+}
+
+body .p-floatlabel label {
+  padding-inline: 0.22rem;
+  color: var(--nexo-color-text-secondary);
+  font-size: 0.84rem;
+  box-shadow: none !important;
+}
+
+body .p-floatlabel:has(.p-inputwrapper-focus) label,
+body .p-floatlabel:has(.p-filled) label,
+body .p-floatlabel:has(input:focus) label,
+body .p-floatlabel:has(textarea:focus) label {
+  color: var(--nexo-color-accent-strong);
+}
+
 @media (max-width: 767px) {
   body {
-    font-size: 15px;
+    font-size: 16px;
   }
 }

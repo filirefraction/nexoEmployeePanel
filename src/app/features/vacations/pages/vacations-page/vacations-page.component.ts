@@ -2,6 +2,13 @@ import { DatePipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
 import { Component, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { DatePickerModule } from 'primeng/datepicker';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { MessageModule } from 'primeng/message';
+import { TagModule } from 'primeng/tag';
+import { TextareaModule } from 'primeng/textarea';
 import { EmployeeVacationRequestsFacade } from '../../facades/employee-vacation-requests.facade';
 import {
   VacationRequest,
@@ -18,7 +25,20 @@ const VACATION_REQUEST_STATUS_IDS = {
 
 @Component({
   selector: 'app-vacations-page',
-  imports: [DatePipe, DecimalPipe, NgFor, NgIf, ReactiveFormsModule],
+  imports: [
+    DatePipe,
+    DecimalPipe,
+    NgFor,
+    NgIf,
+    ReactiveFormsModule,
+    ButtonModule,
+    DatePickerModule,
+    FloatLabelModule,
+    InputNumberModule,
+    MessageModule,
+    TagModule,
+    TextareaModule
+  ],
   templateUrl: './vacations-page.component.html',
   styleUrl: './vacations-page.component.css'
 })
@@ -27,15 +47,15 @@ export class VacationsPageComponent {
   private readonly destroyRef = inject(DestroyRef);
   protected readonly vacations = inject(EmployeeVacationRequestsFacade);
 
-  protected readonly filterForm = this.formBuilder.nonNullable.group({
-    fromDate: [''],
-    toDate: ['']
+  protected readonly filterForm = this.formBuilder.group({
+    fromDate: this.formBuilder.control<Date | null>(null),
+    toDate: this.formBuilder.control<Date | null>(null)
   });
 
-  protected readonly requestForm = this.formBuilder.nonNullable.group({
-    fromDate: ['', [Validators.required]],
-    requestedDays: [1, [Validators.required, Validators.min(1)]],
-    reason: ['', [Validators.maxLength(500)]]
+  protected readonly requestForm = this.formBuilder.group({
+    fromDate: this.formBuilder.control<Date | null>(null, [Validators.required]),
+    requestedDays: this.formBuilder.control<number | null>(1, [Validators.required, Validators.min(1)]),
+    reason: this.formBuilder.nonNullable.control('', [Validators.maxLength(500)])
   });
 
   protected readonly requests = this.vacations.requests;
@@ -63,15 +83,15 @@ export class VacationsPageComponent {
     const value = this.filterForm.getRawValue();
     this.vacations.load({
       pageNumber: 1,
-      fromDate: value.fromDate || null,
-      toDate: value.toDate || null
+      fromDate: this.toApiDate(value.fromDate),
+      toDate: this.toApiDate(value.toDate)
     });
   }
 
   protected resetFilters(): void {
     this.filterForm.reset({
-      fromDate: '',
-      toDate: ''
+      fromDate: null,
+      toDate: null
     });
     this.vacations.load({
       pageNumber: 1,
@@ -91,8 +111,8 @@ export class VacationsPageComponent {
     const value = this.requestForm.getRawValue();
 
     this.vacations.create({
-      fromDate: value.fromDate,
-      requestedDays: value.requestedDays,
+      fromDate: this.toApiDate(value.fromDate) ?? '',
+      requestedDays: value.requestedDays ?? 0,
       reason: value.reason || null
     });
   }
@@ -106,8 +126,8 @@ export class VacationsPageComponent {
     const value = this.requestForm.getRawValue();
 
     this.vacations.previewRequest({
-      fromDate: value.fromDate,
-      requestedDays: value.requestedDays
+      fromDate: this.toApiDate(value.fromDate) ?? '',
+      requestedDays: value.requestedDays ?? 0
     });
   }
 
@@ -144,7 +164,12 @@ export class VacationsPageComponent {
       | Pick<VacationRequestListItem, 'vacationRequestStatusId' | 'vacationRequestStatusName'>
       | Pick<VacationRequest, 'vacationRequestStatusId' | 'vacationRequestStatusName'>
   ): string {
-    switch (this.resolveVacationRequestStatusCode(item.vacationRequestStatusId, item.vacationRequestStatusName)) {
+    switch (
+      this.resolveVacationRequestStatusCode(
+        item.vacationRequestStatusId,
+        item.vacationRequestStatusName
+      )
+    ) {
       case 'approved':
         return 'Aprobada';
       case 'rejected':
@@ -157,21 +182,26 @@ export class VacationsPageComponent {
     }
   }
 
-  protected getStatusTone(
+  protected getStatusSeverity(
     item:
       | Pick<VacationRequestListItem, 'vacationRequestStatusId' | 'vacationRequestStatusName'>
       | Pick<VacationRequest, 'vacationRequestStatusId' | 'vacationRequestStatusName'>
-  ): string {
-    switch (this.resolveVacationRequestStatusCode(item.vacationRequestStatusId, item.vacationRequestStatusName)) {
+  ): 'success' | 'danger' | 'secondary' | 'warn' {
+    switch (
+      this.resolveVacationRequestStatusCode(
+        item.vacationRequestStatusId,
+        item.vacationRequestStatusName
+      )
+    ) {
       case 'approved':
-        return 'vacations-page__status--success';
+        return 'success';
       case 'rejected':
-        return 'vacations-page__status--danger';
+        return 'danger';
       case 'canceled':
-        return 'vacations-page__status--muted';
+        return 'secondary';
       case 'pending':
       default:
-        return 'vacations-page__status--warning';
+        return 'warn';
     }
   }
 
@@ -214,17 +244,28 @@ export class VacationsPageComponent {
       case 'tuesday':
         return 'Martes';
       case 'wednesday':
-        return 'Miércoles';
+        return 'Miercoles';
       case 'thursday':
         return 'Jueves';
       case 'friday':
         return 'Viernes';
       case 'saturday':
-        return 'Sábado';
+        return 'Sabado';
       case 'sunday':
         return 'Domingo';
       default:
         return day.dayOfWeek;
     }
+  }
+
+  private toApiDate(value: Date | null | undefined): string | null {
+    if (!value) {
+      return null;
+    }
+
+    const year = value.getFullYear();
+    const month = `${value.getMonth() + 1}`.padStart(2, '0');
+    const day = `${value.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

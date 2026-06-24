@@ -72,11 +72,11 @@ export class EmployeeAttendanceFacade {
   });
   readonly attendanceActionHint = computed(() => {
     if (this.canCheckOut()) {
-      return 'Ya tienes una entrada abierta. El siguiente movimiento valido es registrar tu check-out.';
+      return 'Ya tienes una entrada abierta. El siguiente movimiento valido es registrar tu salida.';
     }
 
     if (this.canCheckIn()) {
-      return 'Puedes registrar tu check-in. La API valida automaticamente el dia operativo y evita duplicados.';
+      return 'Puedes registrar tu entrada. El sistema valida automaticamente el dia y evita duplicados.';
     }
 
     return 'Ya registraste tus movimientos disponibles para el dia operativo actual.';
@@ -109,11 +109,11 @@ export class EmployeeAttendanceFacade {
   }
 
   checkIn(request: AttendanceCheckInRequest): void {
-    this.runAction('Check-in registrado correctamente.', () => this.api.checkIn(request));
+    this.runAction('Entrada registrada correctamente.', () => this.api.checkIn(request));
   }
 
   checkOut(request: AttendanceCheckOutRequest): void {
-    this.runAction('Check-out registrado correctamente.', () => this.api.checkOut(request));
+    this.runAction('Salida registrada correctamente.', () => this.api.checkOut(request));
   }
 
   clearAlerts(): void {

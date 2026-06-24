@@ -1,6 +1,6 @@
 # nexoEmployeePanel
 
-Portal web del empleado para `Nexo`, construido en Angular 21 con enfoque mobile-first.
+Portal web del empleado para `Nexo`, construido en Angular 21 con enfoque mobile-first y base PWA.
 
 ## Contexto obligatorio
 
@@ -23,7 +23,7 @@ Documentos principales:
 Hoy el panel ya cubre:
 
 - login, logout y refresh token
-- sesión y guards por compatibilidad de portal empleado
+- sesion y guards por compatibilidad de portal empleado
 - dashboard conectado a `employee-summary`
 - attendance:
   - historial propio
@@ -32,15 +32,21 @@ Hoy el panel ya cubre:
 - vacations:
   - listado propio
   - detalle
-  - creación
-  - cancelación
+  - creacion
+  - cancelacion
 - perfil propio en modo solo lectura
 - pantallas de sistema:
   - acceso restringido
-  - sesión expirada
+  - sesion expirada
   - not found
+- base PWA:
+  - `manifest.webmanifest`
+  - `@angular/service-worker`
+  - prompt de instalacion
+  - prompt de actualizacion
+  - banner offline
 
-## Comandos útiles
+## Comandos utiles
 
 Desarrollo:
 
@@ -58,6 +64,18 @@ Tests:
 
 ```powershell
 npm.cmd test -- --watch=false
+```
+
+Build + host local para validar PWA real:
+
+```powershell
+npm.cmd run qa:pwa
+```
+
+Servir la ultima build generada en `http://127.0.0.1:4301`:
+
+```powershell
+npm.cmd run serve:pwa
 ```
 
 ## Backend esperado
@@ -87,15 +105,49 @@ El proyecto ya incluye:
 
 - `manifest.webmanifest`
 - iconos base
-- metadatos móviles en `index.html`
+- metadatos moviles en `index.html`
+- `ngsw-config.json`
+- service worker habilitado solo en produccion
+- host local de QA en `scripts/serve-pwa.mjs`
 
-Pendiente para una PWA completa:
+Importante:
 
-- integrar `@angular/service-worker`
-- definir estrategia offline/cache
-- validar instalación real en dispositivo
+- `ng serve` no valida service worker real
+- para pruebas PWA usar `npm.cmd run qa:pwa` o `npm.cmd run serve:pwa`
+- el host local recomendado para QA es `http://127.0.0.1:4301`
 
-## Validación manual
+## Decision UI vigente
+
+La decision base del portal empleado es:
+
+- usar `Tailwind CSS` como sistema principal de layout y responsividad
+- usar `PrimeNG` de forma selectiva para inputs, selects, datepickers y feedback
+- evitar replicar patrones visuales del admin panel
+
+Esto significa:
+
+- shell movil propio
+- navegacion compacta
+- vistas tipo app
+- listas y cards en lugar de tablas como patron dominante
+- tema light y controles compactos
+
+## Estado de fases
+
+Estado actual:
+
+1. Fase 1 UI base: cerrada
+2. Fase 2 PWA base: cerrada
+3. Fase 3 optimizacion de bundle inicial: cerrada
+4. Fase 4 QA/manual PWA: lista para ejecucion
+
+Siguiente fase natural:
+
+- ejecutar ronda QA real en movil/PWA
+- registrar bugs funcionales o visuales
+- despues seguir con refinamientos por modulo
+
+## Validacion manual
 
 Checklist recomendado:
 

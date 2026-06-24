@@ -1,11 +1,14 @@
 import { DecimalPipe, NgFor, NgIf } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
 import { EmployeeDashboardFacade } from '../../facades/employee-dashboard.facade';
-import { EmployeeAttendanceSnapshot } from '../../models/employee-summary.model';
+import { EmployeeAttendanceSnapshot, EmployeeSummary } from '../../models/employee-summary.model';
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [DecimalPipe, NgFor, NgIf],
+  imports: [DecimalPipe, NgFor, NgIf, RouterLink, ButtonModule, TagModule],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.css'
 })
@@ -14,6 +17,8 @@ export class DashboardPageComponent {
   protected readonly summary = this.dashboard.summary;
   protected readonly isLoading = this.dashboard.isLoading;
   protected readonly errorMessage = this.dashboard.errorMessage;
+  protected readonly primaryAction = computed(() => this.resolvePrimaryAction(this.summary()));
+  protected readonly secondaryAction = computed(() => this.resolveSecondaryAction(this.summary()));
 
   constructor() {
     this.dashboard.load();
@@ -22,30 +27,47 @@ export class DashboardPageComponent {
   protected getAttendanceStatusLabel(status: string | undefined): string {
     switch (status) {
       case 'checked_in':
-        return 'Con check-in activo';
+        return 'Con entrada activa';
       case 'checked_out':
         return 'Jornada cerrada';
       case 'absent':
         return 'Ausencia registrada';
       case 'non_working_day':
-        return 'Día no laborable';
+        return 'Dia no laborable';
       default:
-        return 'Pendiente de check-in';
+        return 'Pendiente de entrada';
+    }
+  }
+
+  protected getAttendanceTagSeverity(
+    status: string | undefined
+  ): 'success' | 'warn' | 'danger' | 'secondary' {
+    switch (status) {
+      case 'checked_in':
+        return 'success';
+      case 'checked_out':
+        return 'secondary';
+      case 'absent':
+        return 'danger';
+      case 'non_working_day':
+        return 'secondary';
+      default:
+        return 'warn';
     }
   }
 
   protected getAttendanceStatusTone(status: string | undefined): string {
     switch (status) {
       case 'checked_in':
-        return 'dashboard-page__status--success';
+        return 'dashboard-status dashboard-status--success';
       case 'checked_out':
-        return 'dashboard-page__status--neutral';
+        return 'dashboard-status dashboard-status--neutral';
       case 'absent':
-        return 'dashboard-page__status--danger';
+        return 'dashboard-status dashboard-status--danger';
       case 'non_working_day':
-        return 'dashboard-page__status--neutral';
+        return 'dashboard-status dashboard-status--neutral';
       default:
-        return 'dashboard-page__status--warning';
+        return 'dashboard-status dashboard-status--warning';
     }
   }
 
@@ -87,7 +109,11 @@ export class DashboardPageComponent {
     }).format(new Date(value));
   }
 
-  protected formatLocalDate(value: string, timeZone: string, options: Intl.DateTimeFormatOptions): string {
+  protected formatLocalDate(
+    value: string,
+    timeZone: string,
+    options: Intl.DateTimeFormatOptions
+  ): string {
     return new Intl.DateTimeFormat('es-MX', {
       ...options,
       timeZone
@@ -109,8 +135,72 @@ export class DashboardPageComponent {
     }).format(this.parseUtcDateTime(value));
   }
 
+  protected getInitials(fullName: string | null | undefined): string {
+    if (!fullName?.trim()) {
+      return 'NE';
+    }
+
+    const parts = fullName
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2);
+
+    return parts.map((part) => part.charAt(0).toUpperCase()).join('') || 'NE';
+  }
+
   private parseUtcDateTime(value: string): Date {
     const hasOffset = /[zZ]|[+-]\d{2}:\d{2}$/.test(value);
     return new Date(hasOffset ? value : `${value}Z`);
   }
+
+  private resolvePrimaryAction(summary: EmployeeSummary | null): DashboardAction {
+    if (!summary) {
+      return {
+        label: 'Ir a asistencia',
+        link: '/app/asistencia'
+      };
+    }
+
+    if (summary.canCheckIn) {
+      return {
+        label: 'Registrar entrada',
+        link: '/app/asistencia',
+        queryParams: { action: 'check-in' }
+      };
+    }
+
+    if (summary.canCheckOut) {
+      return {
+        label: 'Registrar salida',
+        link: '/app/asistencia',
+        queryParams: { action: 'check-out' }
+      };
+    }
+
+    return {
+      label: 'Ver asistencia',
+      link: '/app/asistencia'
+    };
+  }
+
+  private resolveSecondaryAction(summary: EmployeeSummary | null): DashboardAction {
+    if (summary?.pendingVacationRequests) {
+      return {
+        label: 'Revisar vacaciones',
+        link: '/app/vacaciones'
+      };
+    }
+
+    return {
+      label: 'Ver perfil',
+      link: '/app/perfil'
+    };
+  }
+}
+
+interface DashboardAction {
+  readonly label: string;
+  readonly link: string;
+  readonly queryParams?: Record<string, string>;
 }

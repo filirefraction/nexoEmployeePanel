@@ -1,25 +1,3 @@
 :host {
   display: block;
 }
-
-.auth-shell {
-  position: relative;
-  display: grid;
-  place-items: center;
-  padding: 1.5rem;
-  overflow: hidden;
-}
-
-.auth-shell__backdrop {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at top right, rgba(15, 118, 110, 0.18), transparent 22rem),
-    radial-gradient(circle at bottom left, rgba(180, 71, 8, 0.14), transparent 18rem);
-}
-
-.auth-shell__panel {
-  position: relative;
-  z-index: 1;
-  width: min(100%, 28rem);
-}

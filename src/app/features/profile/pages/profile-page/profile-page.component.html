@@ -1,83 +1,149 @@
-<section class="profile-page">
-  <article *ngIf="isLoading()" class="surface-card profile-page__card">
-    <div class="section-copy">
+<section class="grid gap-4">
+  <article *ngIf="isLoading()" class="surface-card grid gap-3 p-5 sm:p-6">
+    <div class="grid gap-2">
       <span class="pill-chip">Perfil</span>
-      <h1>Cargando tu perfil</h1>
-      <p>Estamos preparando tus datos laborales y de contacto.</p>
+      <h1 class="m-0 text-3xl font-semibold tracking-[-0.04em] text-[var(--ne-ink)]">
+        Cargando perfil
+      </h1>
+      <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+        Estamos preparando tu informacion.
+      </p>
     </div>
   </article>
 
-  <article *ngIf="errorMessage()" class="surface-card profile-page__card profile-page__card--error">
-    <div class="section-copy">
+  <article
+    *ngIf="errorMessage()"
+    class="surface-card grid gap-4 border border-[rgba(180,35,24,0.12)] p-5 sm:p-6"
+  >
+    <div class="grid gap-2">
       <span class="pill-chip">Perfil</span>
-      <h1>No fue posible cargar tu perfil</h1>
-      <p>{{ errorMessage() }}</p>
+      <h1 class="m-0 text-3xl font-semibold tracking-[-0.04em] text-[var(--ne-ink)]">
+        No fue posible cargar tu perfil
+      </h1>
+      <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+        {{ errorMessage() }}
+      </p>
     </div>
 
-    <button class="action-button action-button--secondary" type="button" (click)="dashboard.load()">
-      Reintentar
-    </button>
+    <div class="flex flex-wrap gap-3">
+      <button pButton type="button" severity="secondary" (click)="dashboard.load()">
+        Reintentar
+      </button>
+    </div>
   </article>
 
   <ng-container *ngIf="summary() as data">
-    <article class="surface-card profile-page__card">
-      <div class="section-copy">
-        <span class="pill-chip">Perfil</span>
-        <h1>{{ data.employee.fullName }}</h1>
-        <p>{{ data.employee.jobPositionName || 'Puesto pendiente' }}</p>
+    <article class="surface-card grid gap-5 p-5 sm:p-6">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div class="grid gap-4 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
+          <div
+            class="flex h-18 w-18 items-center justify-center overflow-hidden rounded-[28px] border border-[var(--ne-line)] bg-[var(--ne-brand-soft)] text-xl font-semibold text-[var(--ne-brand)]"
+          >
+            <img
+              *ngIf="data.employee.imageUrl; else profileInitials"
+              [src]="data.employee.imageUrl"
+              [alt]="data.employee.fullName"
+              class="h-full w-full object-cover"
+            />
+            <ng-template #profileInitials>
+              {{ getInitials(data.employee.fullName) }}
+            </ng-template>
+          </div>
+
+          <div class="grid gap-2">
+            <span class="pill-chip">Perfil</span>
+            <div class="grid gap-1">
+              <h1 class="m-0 text-2xl font-semibold tracking-[-0.04em] text-[var(--ne-ink)]">
+                {{ data.employee.fullName }}
+              </h1>
+              <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+                {{ data.employee.jobPositionName || 'Puesto pendiente' }}
+              </p>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              <p-tag
+                [value]="data.employee.isAttendanceRequired ? 'Asistencia requerida' : 'Asistencia no requerida'"
+                [severity]="data.employee.isAttendanceRequired ? 'success' : 'secondary'"
+              ></p-tag>
+              <p-tag
+                [value]="data.employee.isRemoteAllowed ? 'Trabajo remoto permitido' : 'Trabajo remoto no habilitado'"
+                [severity]="data.employee.isRemoteAllowed ? 'info' : 'secondary'"
+              ></p-tag>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+          <a
+            pButton
+            routerLink="/app/asistencia"
+            severity="secondary"
+            class="!border-[rgba(15,118,110,0.16)] !bg-[rgba(15,118,110,0.10)] !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.14)]"
+          >
+            Ver asistencia
+          </a>
+          <a
+            pButton
+            routerLink="/app/vacaciones"
+            class="!border-[var(--ne-brand)] !bg-transparent !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.04)]"
+          >
+            Ver vacaciones
+          </a>
+        </div>
       </div>
 
-      <div class="profile-page__grid">
-        <div>
-          <strong>Número de empleado</strong>
-          <p>{{ data.employee.employeeNumber || 'No capturado' }}</p>
+      <div class="grid gap-0 divide-y divide-[var(--ne-line)] rounded-[20px] border border-[var(--ne-line)] bg-white/76">
+        <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+          <strong class="text-sm font-semibold text-[var(--ne-ink)]">Numero de empleado</strong>
+          <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">{{ data.employee.employeeNumber || 'No capturado' }}</p>
         </div>
 
-        <div>
-          <strong>Correo</strong>
-          <p>{{ data.employee.email || 'No capturado' }}</p>
+        <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+          <strong class="text-sm font-semibold text-[var(--ne-ink)]">Correo</strong>
+          <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">{{ data.employee.email || 'No capturado' }}</p>
         </div>
 
-        <div>
-          <strong>Sucursal</strong>
-          <p>{{ data.employee.branchName || 'No asignada' }}</p>
+        <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+          <strong class="text-sm font-semibold text-[var(--ne-ink)]">Zona horaria</strong>
+          <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">{{ data.timeZone }}</p>
         </div>
 
-        <div>
-          <strong>Departamento</strong>
-          <p>{{ data.employee.departmentName || 'No asignado' }}</p>
-        </div>
-
-        <div>
-          <strong>Puesto</strong>
-          <p>{{ data.employee.jobPositionName || 'No asignado' }}</p>
-        </div>
-
-        <div>
-          <strong>Zona horaria</strong>
-          <p>{{ data.timeZone }}</p>
-        </div>
-
-        <div>
-          <strong>Asistencia requerida</strong>
-          <p>{{ data.employee.isAttendanceRequired ? 'Sí' : 'No' }}</p>
-        </div>
-
-        <div>
-          <strong>Trabajo remoto</strong>
-          <p>{{ data.employee.isRemoteAllowed ? 'Permitido' : 'No permitido' }}</p>
+        <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+          <strong class="text-sm font-semibold text-[var(--ne-ink)]">Hora local</strong>
+          <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+            {{ data.localNow | date: 'fullDate' : undefined : 'es-MX' }}<br />
+            {{ data.localNow | date: 'shortTime' : undefined : 'es-MX' }}
+          </p>
         </div>
       </div>
     </article>
 
-    <article class="surface-card profile-page__card">
-      <div class="section-copy">
-        <span class="pill-chip">Edición</span>
-        <h2>Perfil en modo lectura</h2>
-        <p>
-          Este portal todavía no expone edición directa de perfil porque el backend actual no
-          publica un endpoint específico para actualizar datos del empleado desde el canal personal.
-        </p>
+    <article class="surface-card grid gap-4 p-5 sm:p-6">
+      <div class="grid gap-1">
+      <span class="pill-chip">Datos laborales</span>
+      </div>
+
+      <div class="grid gap-0 divide-y divide-[var(--ne-line)] rounded-[20px] border border-[var(--ne-line)] bg-white/76">
+        <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+          <strong class="text-sm font-semibold text-[var(--ne-ink)]">Sucursal</strong>
+          <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">{{ data.employee.branchName || 'No asignada' }}</p>
+        </div>
+
+        <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+          <strong class="text-sm font-semibold text-[var(--ne-ink)]">Departamento</strong>
+          <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">{{ data.employee.departmentName || 'No asignado' }}</p>
+        </div>
+
+        <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+          <strong class="text-sm font-semibold text-[var(--ne-ink)]">Puesto</strong>
+          <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">{{ data.employee.jobPositionName || 'No asignado' }}</p>
+        </div>
+
+        <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+          <strong class="text-sm font-semibold text-[var(--ne-ink)]">Fecha local</strong>
+          <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">{{ data.localDate | date: 'fullDate' : undefined : 'es-MX' }}</p>
+        </div>
       </div>
     </article>
   </ng-container>
