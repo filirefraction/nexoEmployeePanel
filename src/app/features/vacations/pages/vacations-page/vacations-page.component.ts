@@ -40,7 +40,6 @@ const VACATION_REQUEST_STATUS_IDS = {
     TextareaModule
   ],
   templateUrl: './vacations-page.component.html',
-  styleUrl: './vacations-page.component.css'
 })
 export class VacationsPageComponent {
   private readonly formBuilder = inject(FormBuilder);
@@ -269,3 +268,4 @@ export class VacationsPageComponent {
     return `${year}-${month}-${day}`;
   }
 }
+

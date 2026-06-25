@@ -9,7 +9,6 @@ import { APP_NAV_ITEMS } from './employee-shell.navigation';
   selector: 'app-employee-shell',
   imports: [NgFor, NgIf, RouterLink, RouterLinkActive, RouterOutlet, ButtonModule],
   templateUrl: './employee-shell.component.html',
-  styleUrl: './employee-shell.component.css'
 })
 export class EmployeeShellComponent {
   private readonly session = inject(CurrentSessionService);
@@ -35,3 +34,4 @@ export class EmployeeShellComponent {
     this.session.logout().subscribe();
   }
 }
+

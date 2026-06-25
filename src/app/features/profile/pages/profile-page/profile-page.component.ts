@@ -9,7 +9,6 @@ import { EmployeeDashboardFacade } from '../../../dashboard/facades/employee-das
   selector: 'app-profile-page',
   imports: [DatePipe, NgIf, RouterLink, ButtonModule, TagModule],
   templateUrl: './profile-page.component.html',
-  styleUrl: './profile-page.component.css'
 })
 export class ProfilePageComponent {
   protected readonly dashboard = inject(EmployeeDashboardFacade);
@@ -32,3 +31,4 @@ export class ProfilePageComponent {
       .join('');
   }
 }
+

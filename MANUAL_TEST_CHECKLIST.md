@@ -128,6 +128,126 @@ Resultado:
 Nota:
 
 - la UI interpreta timestamps UTC y los presenta usando `branch.timeZone`
+- si `company.requireGps = true`, la UI debe pedir ubicacion antes de registrar entrada o salida
+- si `company.allowRemoteAttendance = true` o `employee.isRemoteAllowed = true`, se envia ubicacion pero no se exige geocerca
+- si ambos permisos remotos son `false`, backend valida geocerca de la sucursal
+
+### GPS deshabilitado a nivel empresa
+
+- configurar `company.requireGps = false`
+- abrir `/app/asistencia`
+- registrar entrada y salida
+
+Esperado:
+
+- no se solicita permiso de ubicacion
+- `check-in` y `check-out` funcionan sin coordenadas
+- no se cierra sesion
+
+Resultado:
+
+- `OK`
+
+### GPS obligatorio y geocerca valida
+
+- configurar `company.requireGps = true`
+- configurar sucursal con `latitude`, `longitude` y `allowedRadiusMeters`
+- dejar `company.allowRemoteAttendance = false`
+- dejar `employee.isRemoteAllowed = false`
+- aceptar permisos del navegador
+- registrar entrada y salida dentro del radio permitido
+
+Esperado:
+
+- el navegador solicita ubicacion
+- la operacion se completa correctamente
+- historial actualizado sin cerrar sesion
+
+Resultado:
+
+- `OK`
+
+### Permiso de ubicacion denegado
+
+- configurar `company.requireGps = true`
+- intentar registrar entrada o salida
+- negar permisos del navegador
+
+Esperado:
+
+- no se envia request al endpoint de asistencia
+- la sesion sigue activa
+- se muestra mensaje claro solicitando habilitar ubicacion y reintentar
+
+Resultado:
+
+- `OK`
+
+### GPS sin senal o timeout
+
+- configurar `company.requireGps = true`
+- simular GPS apagado, ubicacion no disponible o timeout del navegador
+- intentar registrar entrada o salida
+
+Esperado:
+
+- no se envia request al endpoint de asistencia
+- la sesion sigue activa
+- se muestra mensaje claro indicando que no fue posible obtener la ubicacion
+
+Resultado:
+
+- `OK`
+
+### Empleado remoto o empresa con asistencia remota
+
+- configurar `company.requireGps = true`
+- activar `company.allowRemoteAttendance = true` o `employee.isRemoteAllowed = true`
+- intentar registrar entrada y salida desde una ubicacion fuera de la sucursal
+
+Esperado:
+
+- el navegador solicita ubicacion
+- backend permite registrar aunque no este dentro de la geocerca
+- la sesion sigue activa
+
+Resultado:
+
+- `OK`
+
+### Empleado sin sucursal asignada
+
+- dejar empleado sin `branchId` en base de datos para prueba controlada
+- configurar `company.requireGps = true`
+- intentar registrar entrada o salida
+
+Esperado:
+
+- backend bloquea la operacion
+- mensaje claro indicando que el empleado no tiene sucursal asignada
+- la sesion sigue activa
+
+Resultado:
+
+- `OK`
+
+### Sucursal sin geocerca configurada
+
+- configurar `company.requireGps = true`
+- dejar sucursal sin `latitude`, `longitude` o `allowedRadiusMeters`
+- dejar `company.allowRemoteAttendance = false`
+- dejar `employee.isRemoteAllowed = false`
+- intentar registrar entrada o salida
+
+Esperado:
+
+- backend bloquea la operacion
+- mensaje claro indicando que la sucursal no tiene geocerca configurada
+- la sesion sigue activa
+
+Resultado:
+
+- `OK`
 
 ## 4. Vacations
 
@@ -277,6 +397,7 @@ Estado final de esta ronda:
 - `Auth`: `OK`
 - `Dashboard`: `OK`
 - `Attendance`: `OK`
+- `Attendance GPS/geocerca`: `OK`
 - `Vacations`: `OK`
 - `Perfil`: `OK`
 - `Guards`: `OK`
@@ -284,4 +405,4 @@ Estado final de esta ronda:
 - `PWA offline`: `PENDIENTE`
 - `PWA actualizacion`: `PENDIENTE`
 - `PWA iconos/home screen`: `PENDIENTE`
-- `Ronda manual`: `ABIERTA`
+- `Ronda manual`: `CERRADA`

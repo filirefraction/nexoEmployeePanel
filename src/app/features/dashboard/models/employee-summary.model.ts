@@ -12,6 +12,8 @@ export interface EmployeeProfileSummary {
   readonly imageUrl?: string | null;
   readonly isAttendanceRequired: boolean;
   readonly isRemoteAllowed: boolean;
+  readonly companyRequireGps: boolean;
+  readonly companyAllowRemoteAttendance: boolean;
 }
 
 export interface EmployeeShiftSummary {

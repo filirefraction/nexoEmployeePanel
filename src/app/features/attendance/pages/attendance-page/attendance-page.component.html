@@ -27,6 +27,10 @@
           {{ attendanceActionHint() }}
         </p>
 
+        <p *ngIf="gpsHint()" class="m-0 text-xs leading-5 text-[var(--ne-slate)]">
+          {{ gpsHint() }}
+        </p>
+
         <div
           *ngIf="latestKnownRecord() as record"
           class="grid gap-2 border-t border-[var(--ne-line)] pt-3"
@@ -64,8 +68,8 @@
           type="button"
           severity="secondary"
           class="w-full !border-[rgba(15,118,110,0.16)] !bg-[rgba(15,118,110,0.10)] !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.14)]"
-          [loading]="isActionInFlight() && canCheckIn()"
-          [disabled]="isActionInFlight() || !canCheckIn()"
+          [loading]="isCheckInBusy()"
+          [disabled]="isCheckInBusy() || isCheckOutBusy() || !canCheckIn()"
           (click)="submitCheckIn()"
         >
           Registrar entrada
@@ -76,8 +80,8 @@
           type="button"
           severity="secondary"
           class="w-full !border-[var(--ne-brand)] !bg-transparent !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.04)]"
-          [loading]="isActionInFlight() && canCheckOut()"
-          [disabled]="isActionInFlight() || !canCheckOut()"
+          [loading]="isCheckOutBusy()"
+          [disabled]="isCheckInBusy() || isCheckOutBusy() || !canCheckOut()"
           (click)="submitCheckOut()"
         >
           Registrar salida
@@ -86,6 +90,7 @@
     </div>
 
     <div class="grid gap-3">
+      <p-message *ngIf="locationErrorMessage()" severity="error" [text]="locationErrorMessage() ?? ''"></p-message>
       <p-message *ngIf="successMessage()" severity="success" [text]="successMessage() ?? ''"></p-message>
       <p-message *ngIf="errorMessage()" severity="error" [text]="errorMessage() ?? ''"></p-message>
     </div>

@@ -6,6 +6,6 @@ import { PwaStatusCenterComponent } from './core/pwa/components/pwa-status-cente
   selector: 'app-root',
   imports: [RouterOutlet, PwaStatusCenterComponent],
   templateUrl: './app.html',
-  styleUrl: './app.css'
 })
 export class App {}
+

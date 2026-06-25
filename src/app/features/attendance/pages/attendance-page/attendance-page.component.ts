@@ -1,5 +1,5 @@
 import { NgFor, NgIf } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -9,6 +9,7 @@ import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { CurrentSessionService } from '../../../../core/session/current-session.service';
+import { EmployeeDashboardFacade } from '../../../dashboard/facades/employee-dashboard.facade';
 import { EmployeeAttendanceFacade } from '../../facades/employee-attendance.facade';
 import { AttendanceRecordListItem } from '../../models/attendance-record.model';
 
@@ -27,7 +28,6 @@ import { AttendanceRecordListItem } from '../../models/attendance-record.model';
     TagModule
   ],
   templateUrl: './attendance-page.component.html',
-  styleUrl: './attendance-page.component.css'
 })
 export class AttendancePageComponent {
   private readonly formBuilder = inject(FormBuilder);
@@ -35,6 +35,10 @@ export class AttendancePageComponent {
   private readonly router = inject(Router);
   protected readonly session = inject(CurrentSessionService);
   protected readonly attendance = inject(EmployeeAttendanceFacade);
+  protected readonly dashboard = inject(EmployeeDashboardFacade);
+
+  private readonly locationErrorState = signal<string | null>(null);
+  private readonly gpsActionState = signal<'check-in' | 'check-out' | null>(null);
 
   protected readonly filterForm = this.formBuilder.group({
     fromDate: this.formBuilder.control<Date | null>(null),
@@ -43,7 +47,7 @@ export class AttendancePageComponent {
   });
   protected readonly manualFilterOptions = [
     { label: 'Todos', value: '' },
-    { label: 'Registros automaticos', value: 'false' },
+    { label: 'Registros automáticos', value: 'false' },
     { label: 'Registros manuales', value: 'true' }
   ];
 
@@ -59,9 +63,34 @@ export class AttendancePageComponent {
   protected readonly canCheckOut = this.attendance.canCheckOut;
   protected readonly attendanceStatusLabel = this.attendance.attendanceStatusLabel;
   protected readonly attendanceActionHint = this.attendance.attendanceActionHint;
+  protected readonly locationErrorMessage = computed(() => this.locationErrorState());
+  protected readonly isDashboardLoading = this.dashboard.isLoading;
+  protected readonly attendancePolicy = computed(() => this.dashboard.summary()?.employee ?? null);
+  protected readonly gpsHint = computed(() => {
+    const policy = this.attendancePolicy();
+
+    if (!policy?.companyRequireGps) {
+      return null;
+    }
+
+    return policy.isRemoteAllowed || policy.companyAllowRemoteAttendance
+      ? 'Se solicitará tu ubicación para registrar asistencia.'
+      : 'Se solicitará tu ubicación para validar la geocerca de tu sucursal.';
+  });
+  protected readonly isCheckInBusy = computed(() => {
+    return this.isActionInFlight() || this.gpsActionState() === 'check-in';
+  });
+  protected readonly isCheckOutBusy = computed(() => {
+    return this.isActionInFlight() || this.gpsActionState() === 'check-out';
+  });
 
   constructor() {
     this.attendance.load();
+
+    if (!this.dashboard.summary() && !this.dashboard.isLoading()) {
+      this.dashboard.load();
+    }
+
     this.consumeDashboardAction();
   }
 
@@ -105,18 +134,12 @@ export class AttendancePageComponent {
     this.attendance.load({ pageNumber });
   }
 
-  protected submitCheckIn(): void {
-    this.attendance.checkIn({
-      source: 'web',
-      observation: null
-    });
+  protected async submitCheckIn(): Promise<void> {
+    await this.executeAttendanceAction('check-in');
   }
 
-  protected submitCheckOut(): void {
-    this.attendance.checkOut({
-      source: 'web',
-      observation: null
-    });
+  protected async submitCheckOut(): Promise<void> {
+    await this.executeAttendanceAction('check-out');
   }
 
   protected formatAttendanceDate(record: AttendanceRecordListItem): string {
@@ -187,17 +210,81 @@ export class AttendancePageComponent {
     return 'success';
   }
 
+  private async executeAttendanceAction(action: 'check-in' | 'check-out'): Promise<void> {
+    if (this.isActionInFlight() || this.gpsActionState()) {
+      return;
+    }
+
+    this.locationErrorState.set(null);
+    this.attendance.clearAlerts();
+    this.gpsActionState.set(action);
+
+    try {
+      const location = await this.resolveAttendanceLocation();
+
+      if (location === undefined) {
+        return;
+      }
+
+      if (action === 'check-in') {
+        this.attendance.checkIn({
+          source: 'web',
+          observation: null,
+          latitude: location?.latitude ?? null,
+          longitude: location?.longitude ?? null
+        });
+
+        return;
+      }
+
+      this.attendance.checkOut({
+        source: 'web',
+        observation: null,
+        latitude: location?.latitude ?? null,
+        longitude: location?.longitude ?? null
+      });
+    } finally {
+      this.gpsActionState.set(null);
+    }
+  }
+
+  private async resolveAttendanceLocation(): Promise<CoordinatesPayload | null | undefined> {
+    const policy = this.attendancePolicy();
+
+    if (!policy) {
+      if (!this.dashboard.isLoading()) {
+        this.dashboard.load();
+      }
+
+      this.locationErrorState.set(
+        'Estamos cargando tu configuración de asistencia. Intenta nuevamente en unos segundos.'
+      );
+      return undefined;
+    }
+
+    if (!policy.companyRequireGps) {
+      return null;
+    }
+
+    try {
+      return await this.getCurrentPosition();
+    } catch (error) {
+      this.locationErrorState.set(this.resolveGeolocationErrorMessage(error));
+      return undefined;
+    }
+  }
+
   private consumeDashboardAction(): void {
     const action = this.route.snapshot.queryParamMap.get('action');
 
     if (action === 'check-in') {
-      this.submitCheckIn();
+      void this.submitCheckIn();
       this.clearDashboardAction();
       return;
     }
 
     if (action === 'check-out') {
-      this.submitCheckOut();
+      void this.submitCheckOut();
       this.clearDashboardAction();
     }
   }
@@ -255,4 +342,58 @@ export class AttendancePageComponent {
     const day = `${value.getDate()}`.padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
+
+  private getCurrentPosition(): Promise<CoordinatesPayload> {
+    return new Promise((resolve, reject) => {
+      if (typeof navigator === 'undefined' || !navigator.geolocation) {
+        reject(new Error('unsupported'));
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+        },
+        (error) => reject(error),
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0
+        }
+      );
+    });
+  }
+
+  private resolveGeolocationErrorMessage(error: unknown): string {
+    if (error instanceof Error && error.message === 'unsupported') {
+      return 'Tu navegador no permite obtener la ubicación. Usa un navegador compatible para registrar asistencia.';
+    }
+
+    const code =
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      typeof (error as { code?: unknown }).code === 'number'
+        ? (error as { code: number }).code
+        : null;
+
+    switch (code) {
+      case 1:
+        return 'Necesitamos acceso a tu ubicación para registrar asistencia. Permite el GPS del navegador y vuelve a intentarlo.';
+      case 2:
+        return 'No fue posible obtener tu ubicación actual. Verifica que el GPS esté activo e inténtalo nuevamente.';
+      case 3:
+        return 'La ubicación tardó demasiado en responder. Verifica la señal del GPS e inténtalo nuevamente.';
+      default:
+        return 'No fue posible obtener tu ubicación. Inténtalo nuevamente.';
+    }
+  }
+}
+
+interface CoordinatesPayload {
+  readonly latitude: number;
+  readonly longitude: number;
 }

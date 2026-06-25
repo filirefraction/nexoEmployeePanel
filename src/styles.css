@@ -260,3 +260,54 @@ body .p-floatlabel:has(textarea:focus) label {
     font-size: 16px;
   }
 }
+.system-page-shell {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.25rem;
+}
+.system-page {
+  width: min(100%, 36rem);
+  display: grid;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+.system-page h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  line-height: 1.1;
+}
+.system-page p {
+  color: var(--ne-slate);
+}
+.system-page__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.dashboard-status {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+.dashboard-status--success {
+  background: rgba(6, 118, 71, 0.12);
+  color: #067647;
+}
+.dashboard-status--warning {
+  background: rgba(181, 71, 8, 0.12);
+  color: #b54708;
+}
+.dashboard-status--danger {
+  background: rgba(180, 35, 24, 0.12);
+  color: #b42318;
+}
+.dashboard-status--neutral {
+  background: rgba(23, 26, 31, 0.08);
+  color: #48525c;
+}

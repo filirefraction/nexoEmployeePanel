@@ -31,7 +31,6 @@ interface CompanySelectOption {
     SelectModule
   ],
   templateUrl: './login-page.component.html',
-  styleUrl: './login-page.component.css'
 })
 export class LoginPageComponent {
   private readonly formBuilder = inject(FormBuilder);
@@ -131,3 +130,4 @@ export class LoginPageComponent {
     return control.invalid && (control.dirty || control.touched);
   }
 }
+

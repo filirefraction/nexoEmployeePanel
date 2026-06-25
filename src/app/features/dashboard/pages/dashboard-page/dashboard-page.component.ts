@@ -10,7 +10,6 @@ import { EmployeeAttendanceSnapshot, EmployeeSummary } from '../../models/employ
   selector: 'app-dashboard-page',
   imports: [DecimalPipe, NgFor, NgIf, RouterLink, ButtonModule, TagModule],
   templateUrl: './dashboard-page.component.html',
-  styleUrl: './dashboard-page.component.css'
 })
 export class DashboardPageComponent {
   protected readonly dashboard = inject(EmployeeDashboardFacade);
@@ -204,3 +203,4 @@ interface DashboardAction {
   readonly link: string;
   readonly queryParams?: Record<string, string>;
 }
+

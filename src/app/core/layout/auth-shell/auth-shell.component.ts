@@ -11,7 +11,6 @@ interface AuthHighlight {
   selector: 'app-auth-shell',
   imports: [RouterOutlet],
   templateUrl: './auth-shell.component.html',
-  styleUrl: './auth-shell.component.css'
 })
 export class AuthShellComponent {
   protected readonly highlights: readonly AuthHighlight[] = [
@@ -32,3 +31,4 @@ export class AuthShellComponent {
     }
   ];
 }
+
