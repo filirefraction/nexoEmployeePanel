@@ -31,6 +31,49 @@
           {{ gpsHint() }}
         </p>
 
+        <p *ngIf="photoHint()" class="m-0 text-xs leading-5 text-[var(--ne-slate)]">
+          {{ photoHint() }}
+        </p>
+
+        <input
+          #checkInPhotoInput
+          type="file"
+          accept="image/*"
+          capture="environment"
+          class="hidden"
+          (change)="handleCheckInPhotoSelected($event)" />
+
+        <div
+          *ngIf="hasPendingCheckInPhoto()"
+          class="grid gap-3 rounded-[24px] border border-[rgba(15,118,110,0.18)] bg-[rgba(15,118,110,0.06)] p-4"
+        >
+          <p class="m-0 text-sm font-medium text-[var(--ne-ink)]">
+            {{ pendingPhotoHint() }}
+          </p>
+
+          <div class="flex flex-wrap gap-3">
+            <button
+              pButton
+              type="button"
+              severity="secondary"
+              class="!border-[rgba(15,118,110,0.16)] !bg-[rgba(15,118,110,0.10)] !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.14)]"
+              (click)="openPendingCheckInPhotoPicker()"
+            >
+              Tomar foto y continuar
+            </button>
+
+            <button
+              pButton
+              type="button"
+              severity="secondary"
+              class="!border-[var(--ne-line)] !bg-white !text-[var(--ne-slate)] hover:!bg-[var(--ne-surface-soft)]"
+              (click)="cancelPendingCheckInPhoto()"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+
         <div
           *ngIf="latestKnownRecord() as record"
           class="grid gap-2 border-t border-[var(--ne-line)] pt-3"
@@ -69,7 +112,7 @@
           severity="secondary"
           class="w-full !border-[rgba(15,118,110,0.16)] !bg-[rgba(15,118,110,0.10)] !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.14)]"
           [loading]="isCheckInBusy()"
-          [disabled]="isCheckInBusy() || isCheckOutBusy() || !canCheckIn()"
+          [disabled]="isCheckInBusy() || isCheckOutBusy() || !canCheckIn() || hasPendingCheckInPhoto()"
           (click)="submitCheckIn()"
         >
           Registrar entrada
@@ -81,7 +124,7 @@
           severity="secondary"
           class="w-full !border-[var(--ne-brand)] !bg-transparent !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.04)]"
           [loading]="isCheckOutBusy()"
-          [disabled]="isCheckInBusy() || isCheckOutBusy() || !canCheckOut()"
+          [disabled]="isCheckInBusy() || isCheckOutBusy() || !canCheckOut() || hasPendingCheckInPhoto()"
           (click)="submitCheckOut()"
         >
           Registrar salida

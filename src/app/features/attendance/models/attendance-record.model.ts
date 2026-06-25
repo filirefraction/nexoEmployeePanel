@@ -31,6 +31,9 @@ export interface AttendanceRecord {
   readonly checkOutLongitude?: number | null;
   readonly checkInSource?: string | null;
   readonly checkOutSource?: string | null;
+  readonly checkInPhotoFileName?: string | null;
+  readonly checkInPhotoPath?: string | null;
+  readonly checkInPhotoUrl?: string | null;
   readonly workedMinutes?: number | null;
   readonly lateMinutes: number;
   readonly overtimeMinutes: number;
@@ -39,6 +42,7 @@ export interface AttendanceRecord {
   readonly observation?: string | null;
   readonly hasCheckIn: boolean;
   readonly hasCheckOut: boolean;
+  readonly hasCheckInPhoto?: boolean;
 }
 
 export interface AttendanceRecordFilter {

@@ -47,6 +47,37 @@ export class EmployeeAttendanceApiService {
     return this.http.post<ApiResponse<AttendanceRecord>>(`${this.resource}/check-in`, request);
   }
 
+  checkInWithPhoto(
+    request: AttendanceCheckInRequest,
+    photo: File
+  ): Observable<ApiResponse<AttendanceRecord>> {
+    const formData = new FormData();
+    formData.append('source', request.source);
+
+    if (request.branchId) {
+      formData.append('branchId', request.branchId);
+    }
+
+    if (typeof request.latitude === 'number') {
+      formData.append('latitude', request.latitude.toString());
+    }
+
+    if (typeof request.longitude === 'number') {
+      formData.append('longitude', request.longitude.toString());
+    }
+
+    if (request.observation) {
+      formData.append('observation', request.observation);
+    }
+
+    formData.append('photo', photo, photo.name);
+
+    return this.http.post<ApiResponse<AttendanceRecord>>(
+      `${this.resource}/check-in-with-photo`,
+      formData
+    );
+  }
+
   checkOut(request: AttendanceCheckOutRequest): Observable<ApiResponse<AttendanceRecord>> {
     return this.http.post<ApiResponse<AttendanceRecord>>(`${this.resource}/check-out`, request);
   }

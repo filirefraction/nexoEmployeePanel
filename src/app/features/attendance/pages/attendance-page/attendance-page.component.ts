@@ -1,5 +1,5 @@
 import { NgFor, NgIf } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -10,8 +10,12 @@ import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { CurrentSessionService } from '../../../../core/session/current-session.service';
 import { EmployeeDashboardFacade } from '../../../dashboard/facades/employee-dashboard.facade';
+import { EmployeeProfileSummary } from '../../../dashboard/models/employee-summary.model';
 import { EmployeeAttendanceFacade } from '../../facades/employee-attendance.facade';
-import { AttendanceRecordListItem } from '../../models/attendance-record.model';
+import { AttendanceCheckInRequest, AttendanceRecordListItem } from '../../models/attendance-record.model';
+const ALLOWED_CHECK_IN_PHOTO_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
+const MAX_CHECK_IN_PHOTO_BYTES = 5 * 1024 * 1024;
+
 
 @Component({
   selector: 'app-attendance-page',
@@ -30,6 +34,9 @@ import { AttendanceRecordListItem } from '../../models/attendance-record.model';
   templateUrl: './attendance-page.component.html',
 })
 export class AttendancePageComponent {
+  @ViewChild('checkInPhotoInput')
+  private readonly checkInPhotoInput?: ElementRef<HTMLInputElement>;
+
   private readonly formBuilder = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -39,6 +46,7 @@ export class AttendancePageComponent {
 
   private readonly locationErrorState = signal<string | null>(null);
   private readonly gpsActionState = signal<'check-in' | 'check-out' | null>(null);
+  private readonly pendingCheckInRequestState = signal<AttendanceCheckInRequest | null>(null);
 
   protected readonly filterForm = this.formBuilder.group({
     fromDate: this.formBuilder.control<Date | null>(null),
@@ -66,6 +74,7 @@ export class AttendancePageComponent {
   protected readonly locationErrorMessage = computed(() => this.locationErrorState());
   protected readonly isDashboardLoading = this.dashboard.isLoading;
   protected readonly attendancePolicy = computed(() => this.dashboard.summary()?.employee ?? null);
+  protected readonly hasPendingCheckInPhoto = computed(() => !!this.pendingCheckInRequestState());
   protected readonly gpsHint = computed(() => {
     const policy = this.attendancePolicy();
 
@@ -76,6 +85,26 @@ export class AttendancePageComponent {
     return policy.isRemoteAllowed || policy.companyAllowRemoteAttendance
       ? 'Se solicitará tu ubicación para registrar asistencia.'
       : 'Se solicitará tu ubicación para validar la geocerca de tu sucursal.';
+  });
+  protected readonly photoHint = computed(() => {
+    const policy = this.attendancePolicy();
+
+    if (!policy?.companyRequirePhoto) {
+      return null;
+    }
+
+    if (!policy.isRemoteAllowed && !policy.companyAllowRemoteAttendance) {
+      return null;
+    }
+
+    return 'Si tu registro entra como asistencia remota, se solicitará una foto antes de completar la entrada.';
+  });
+  protected readonly pendingPhotoHint = computed(() => {
+    if (!this.hasPendingCheckInPhoto()) {
+      return null;
+    }
+
+    return 'Tu ubicación ya fue validada. Toma o selecciona una foto para completar la entrada remota.';
   });
   protected readonly isCheckInBusy = computed(() => {
     return this.isActionInFlight() || this.gpsActionState() === 'check-in';
@@ -140,6 +169,53 @@ export class AttendancePageComponent {
 
   protected async submitCheckOut(): Promise<void> {
     await this.executeAttendanceAction('check-out');
+  }
+
+  protected openPendingCheckInPhotoPicker(): void {
+    this.locationErrorState.set(null);
+    this.triggerCheckInPhotoSelection();
+  }
+
+  protected cancelPendingCheckInPhoto(): void {
+    this.pendingCheckInRequestState.set(null);
+    this.locationErrorState.set('Se canceló el registro de entrada remota porque no se adjuntó la foto requerida.');
+  }
+
+  protected handleCheckInPhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.[0] ?? null;
+    const pendingRequest = this.pendingCheckInRequestState();
+
+    if (!pendingRequest) {
+      if (input) {
+        input.value = '';
+      }
+      return;
+    }
+
+    if (!file) {
+      this.locationErrorState.set('No se seleccionó ninguna foto. Toca "Tomar foto y continuar" para reintentar o cancela la operación.');
+      if (input) {
+        input.value = '';
+      }
+      return;
+    }
+
+    const photoValidationError = this.validateCheckInPhoto(file);
+    if (photoValidationError) {
+      this.locationErrorState.set(photoValidationError);
+      if (input) {
+        input.value = '';
+      }
+      return;
+    }
+
+    this.pendingCheckInRequestState.set(null);
+    this.attendance.checkIn(pendingRequest, file);
+
+    if (input) {
+      input.value = '';
+    }
   }
 
   protected formatAttendanceDate(record: AttendanceRecordListItem): string {
@@ -227,13 +303,19 @@ export class AttendancePageComponent {
       }
 
       if (action === 'check-in') {
-        this.attendance.checkIn({
+        const request: AttendanceCheckInRequest = {
           source: 'web',
           observation: null,
           latitude: location?.latitude ?? null,
           longitude: location?.longitude ?? null
-        });
+        };
 
+        if (this.shouldRequireRemotePhoto(location)) {
+          this.pendingCheckInRequestState.set(request);
+          return;
+        }
+
+        this.attendance.checkIn(request);
         return;
       }
 
@@ -272,6 +354,92 @@ export class AttendancePageComponent {
       this.locationErrorState.set(this.resolveGeolocationErrorMessage(error));
       return undefined;
     }
+  }
+
+  private shouldRequireRemotePhoto(location: CoordinatesPayload | null): boolean {
+    const policy = this.attendancePolicy();
+
+    if (!policy?.companyRequirePhoto) {
+      return false;
+    }
+
+    return this.isRemoteAttendance(policy, location);
+  }
+
+  private isRemoteAttendance(
+    policy: EmployeeProfileSummary,
+    location: CoordinatesPayload | null
+  ): boolean {
+    if (!policy.companyAllowRemoteAttendance && !policy.isRemoteAllowed) {
+      return false;
+    }
+
+    if (!policy.companyRequireGps) {
+      return true;
+    }
+
+    if (!location) {
+      return true;
+    }
+
+    if (
+      typeof policy.branchLatitude !== 'number' ||
+      typeof policy.branchLongitude !== 'number' ||
+      typeof policy.branchAllowedRadiusMeters !== 'number' ||
+      policy.branchAllowedRadiusMeters <= 0
+    ) {
+      return true;
+    }
+
+    const distance = this.calculateDistanceInMeters(
+      policy.branchLatitude,
+      policy.branchLongitude,
+      location.latitude,
+      location.longitude
+    );
+
+    return distance > policy.branchAllowedRadiusMeters;
+  }
+
+  private triggerCheckInPhotoSelection(): void {
+    const input = this.checkInPhotoInput?.nativeElement;
+
+    if (!input) {
+      this.pendingCheckInRequestState.set(null);
+      this.locationErrorState.set(
+        'No fue posible abrir la cámara o el selector de archivos para capturar tu foto.'
+      );
+      return;
+    }
+
+    input.value = '';
+    input.click();
+  }
+
+  private validateCheckInPhoto(file: File): string | null {
+    if (file.size <= 0) {
+      return 'La foto de asistencia está vacía.';
+    }
+
+    if (file.size > MAX_CHECK_IN_PHOTO_BYTES) {
+      return 'La foto de asistencia excede el tamaño máximo permitido de 5 MB.';
+    }
+
+    const extension = this.getFileExtension(file.name);
+    if (!extension || !ALLOWED_CHECK_IN_PHOTO_EXTENSIONS.includes(extension)) {
+      return 'La extensión del archivo de la foto de asistencia no está permitida.';
+    }
+
+    if (file.type && !file.type.startsWith('image/')) {
+      return 'El archivo seleccionado no es una imagen válida para la foto de asistencia.';
+    }
+
+    return null;
+  }
+
+  private getFileExtension(fileName: string): string {
+    const lastDot = fileName.lastIndexOf('.');
+    return lastDot >= 0 ? fileName.slice(lastDot).toLowerCase() : '';
   }
 
   private consumeDashboardAction(): void {
@@ -391,9 +559,34 @@ export class AttendancePageComponent {
         return 'No fue posible obtener tu ubicación. Inténtalo nuevamente.';
     }
   }
+
+  private calculateDistanceInMeters(
+    latitude1: number,
+    longitude1: number,
+    latitude2: number,
+    longitude2: number
+  ): number {
+    const earthRadius = 6371000;
+    const latitudeDelta = this.degreesToRadians(latitude2 - latitude1);
+    const longitudeDelta = this.degreesToRadians(longitude2 - longitude1);
+
+    const a =
+      Math.sin(latitudeDelta / 2) * Math.sin(latitudeDelta / 2) +
+      Math.cos(this.degreesToRadians(latitude1)) * Math.cos(this.degreesToRadians(latitude2)) *
+      Math.sin(longitudeDelta / 2) * Math.sin(longitudeDelta / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadius * c;
+  }
+
+  private degreesToRadians(value: number): number {
+    return value * Math.PI / 180;
+  }
 }
 
 interface CoordinatesPayload {
   readonly latitude: number;
   readonly longitude: number;
 }
+
+

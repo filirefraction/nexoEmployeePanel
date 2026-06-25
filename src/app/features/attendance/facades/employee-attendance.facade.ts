@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { finalize } from 'rxjs';
+import { finalize, Observable } from 'rxjs';
+import { ApiResponse } from '../../../shared/models/api-response.model';
 import { ApiErrorService } from '../../../core/http/api-error.service';
 import { PaginationMetadata } from '../../../shared/models/pagination.model';
 import { EmployeeAttendanceApiService } from '../api/employee-attendance.api.service';
@@ -108,8 +109,11 @@ export class EmployeeAttendanceFacade {
       });
   }
 
-  checkIn(request: AttendanceCheckInRequest): void {
-    this.runAction('Entrada registrada correctamente.', () => this.api.checkIn(request));
+  checkIn(request: AttendanceCheckInRequest, photo?: File | null): void {
+    this.runAction(
+      'Entrada registrada correctamente.',
+      () => (photo ? this.api.checkInWithPhoto(request, photo) : this.api.checkIn(request))
+    );
   }
 
   checkOut(request: AttendanceCheckOutRequest): void {
@@ -123,7 +127,7 @@ export class EmployeeAttendanceFacade {
 
   private runAction(
     successMessage: string,
-    operation: () => ReturnType<EmployeeAttendanceApiService['checkIn']>
+    operation: () => Observable<ApiResponse<AttendanceRecord>>
   ): void {
     if (this.actionState()) {
       return;
@@ -143,7 +147,7 @@ export class EmployeeAttendanceFacade {
         },
         error: (error: unknown) => {
           this.errorState.set(
-            this.apiError.getDisplayMessage(error, 'No fue posible completar la operaciÃ³n de asistencia.')
+            this.apiError.getDisplayMessage(error, 'No fue posible completar la operación de asistencia.')
           );
         }
       });

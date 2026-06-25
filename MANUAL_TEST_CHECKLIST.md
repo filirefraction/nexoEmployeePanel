@@ -215,6 +215,23 @@ Resultado:
 
 - `OK`
 
+### Foto obligatoria en asistencia remota
+
+- activar `company.requirePhoto = true`
+- mantener `company.allowRemoteAttendance = true` o `employee.isRemoteAllowed = true`
+- intentar registrar entrada remota cancelando la seleccion de foto
+- repetir registrando la foto correctamente
+
+Esperado:
+
+- si se cancela la foto, no se envia el check-in y la sesion sigue activa
+- si se adjunta la foto, el check-in se completa correctamente
+- la regla aplica solo al check-in remoto, no al check-out
+
+Resultado:
+
+- `PENDIENTE`
+
 ### Empleado sin sucursal asignada
 
 - dejar empleado sin `branchId` en base de datos para prueba controlada
@@ -398,6 +415,7 @@ Estado final de esta ronda:
 - `Dashboard`: `OK`
 - `Attendance`: `OK`
 - `Attendance GPS/geocerca`: `OK`
+- `Attendance foto remota`: `PENDIENTE`
 - `Vacations`: `OK`
 - `Perfil`: `OK`
 - `Guards`: `OK`
@@ -406,3 +424,4 @@ Estado final de esta ronda:
 - `PWA actualizacion`: `PENDIENTE`
 - `PWA iconos/home screen`: `PENDIENTE`
 - `Ronda manual`: `CERRADA`
+

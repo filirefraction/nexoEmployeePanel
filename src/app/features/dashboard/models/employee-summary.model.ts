@@ -13,7 +13,11 @@ export interface EmployeeProfileSummary {
   readonly isAttendanceRequired: boolean;
   readonly isRemoteAllowed: boolean;
   readonly companyRequireGps: boolean;
+  readonly companyRequirePhoto: boolean;
   readonly companyAllowRemoteAttendance: boolean;
+  readonly branchLatitude?: number | null;
+  readonly branchLongitude?: number | null;
+  readonly branchAllowedRadiusMeters?: number | null;
 }
 
 export interface EmployeeShiftSummary {
