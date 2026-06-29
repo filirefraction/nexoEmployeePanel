@@ -1,15 +1,10 @@
-<section class="grid gap-4">
+﻿<section class="grid gap-4">
   <article class="surface-card grid gap-5 p-5 sm:p-6">
-    <div class="grid gap-3">
+    <div class="grid gap-1">
       <span class="pill-chip">Asistencia</span>
-      <div class="grid gap-2">
-        <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
-          Registra tu entrada o salida y consulta tu historial reciente.
-        </p>
-      </div>
     </div>
 
-    <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+    <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start">
       <div class="grid gap-3">
         <div class="flex flex-wrap items-center gap-2">
           <p-tag
@@ -23,60 +18,9 @@
           ></p-tag>
         </div>
 
-        <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
-          {{ attendanceActionHint() }}
-        </p>
-
-        <p *ngIf="gpsHint()" class="m-0 text-xs leading-5 text-[var(--ne-slate)]">
-          {{ gpsHint() }}
-        </p>
-
-        <p *ngIf="photoHint()" class="m-0 text-xs leading-5 text-[var(--ne-slate)]">
-          {{ photoHint() }}
-        </p>
-
-        <input
-          #checkInPhotoInput
-          type="file"
-          accept="image/*"
-          capture="environment"
-          class="hidden"
-          (change)="handleCheckInPhotoSelected($event)" />
-
-        <div
-          *ngIf="hasPendingCheckInPhoto()"
-          class="grid gap-3 rounded-[24px] border border-[rgba(15,118,110,0.18)] bg-[rgba(15,118,110,0.06)] p-4"
-        >
-          <p class="m-0 text-sm font-medium text-[var(--ne-ink)]">
-            {{ pendingPhotoHint() }}
-          </p>
-
-          <div class="flex flex-wrap gap-3">
-            <button
-              pButton
-              type="button"
-              severity="secondary"
-              class="!border-[rgba(15,118,110,0.16)] !bg-[rgba(15,118,110,0.10)] !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.14)]"
-              (click)="openPendingCheckInPhotoPicker()"
-            >
-              Tomar foto y continuar
-            </button>
-
-            <button
-              pButton
-              type="button"
-              severity="secondary"
-              class="!border-[var(--ne-line)] !bg-white !text-[var(--ne-slate)] hover:!bg-[var(--ne-surface-soft)]"
-              (click)="cancelPendingCheckInPhoto()"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-
         <div
           *ngIf="latestKnownRecord() as record"
-          class="grid gap-2 border-t border-[var(--ne-line)] pt-3"
+          class="grid gap-2 rounded-[20px] border border-[var(--ne-line)] bg-white/76 p-4"
         >
           <div class="flex items-center justify-between gap-3">
             <strong class="text-sm font-semibold text-[var(--ne-ink)]">
@@ -105,30 +49,63 @@
         </div>
       </div>
 
-      <div class="grid gap-3 sm:grid-cols-2 lg:w-[19rem] lg:grid-cols-1">
-        <button
-          pButton
-          type="button"
-          severity="secondary"
-          class="w-full !border-[rgba(15,118,110,0.16)] !bg-[rgba(15,118,110,0.10)] !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.14)]"
-          [loading]="isCheckInBusy()"
-          [disabled]="isCheckInBusy() || isCheckOutBusy() || !canCheckIn() || hasPendingCheckInPhoto()"
-          (click)="submitCheckIn()"
-        >
-          Registrar entrada
-        </button>
+      <div class="grid gap-3">
+        <input
+          #checkInPhotoInput
+          type="file"
+          accept="image/*"
+          capture="environment"
+          class="hidden"
+          (change)="handleCheckInPhotoSelected($event)" />
 
-        <button
-          pButton
-          type="button"
-          severity="secondary"
-          class="w-full !border-[var(--ne-brand)] !bg-transparent !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.04)]"
-          [loading]="isCheckOutBusy()"
-          [disabled]="isCheckInBusy() || isCheckOutBusy() || !canCheckOut() || hasPendingCheckInPhoto()"
-          (click)="submitCheckOut()"
-        >
-          Registrar salida
-        </button>
+        <div class="grid gap-2 rounded-[24px] border border-[var(--ne-line)] bg-white/76 p-4">
+          <p class="m-0 text-sm font-medium text-[var(--ne-ink)]">
+            {{ primaryActionSupportText() }}
+          </p>
+
+          <p *ngIf="gpsHint() && !hasPendingCheckInPhoto()" class="m-0 text-xs leading-5 text-[var(--ne-slate)]">
+            {{ gpsHint() }}
+          </p>
+
+          <p *ngIf="photoHint() && !hasPendingCheckInPhoto()" class="m-0 text-xs leading-5 text-[var(--ne-slate)]">
+            {{ photoHint() }}
+          </p>
+
+          <button
+            *ngIf="!hasPendingCheckInPhoto()"
+            pButton
+            type="button"
+            severity="secondary"
+            class="w-full !border-[rgba(15,118,110,0.16)] !bg-[rgba(15,118,110,0.10)] !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.14)]"
+            [loading]="primaryActionBusy()"
+            [disabled]="primaryActionDisabled()"
+            (click)="submitPrimaryAction()"
+          >
+            {{ primaryActionLabel() }}
+          </button>
+
+          <div *ngIf="hasPendingCheckInPhoto()" class="grid gap-3">
+            <button
+              pButton
+              type="button"
+              severity="secondary"
+              class="w-full !border-[rgba(15,118,110,0.16)] !bg-[rgba(15,118,110,0.10)] !text-[var(--ne-brand-strong)] hover:!bg-[rgba(15,118,110,0.14)]"
+              (click)="openPendingCheckInPhotoPicker()"
+            >
+              Cargar foto
+            </button>
+
+            <button
+              pButton
+              type="button"
+              severity="secondary"
+              class="w-full !border-[var(--ne-line)] !bg-white !text-[var(--ne-slate)] hover:!bg-[var(--ne-surface-soft)]"
+              (click)="cancelPendingCheckInPhoto()"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -256,7 +233,7 @@
 
     <div *ngIf="pagination() as page" class="flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-[var(--ne-line)] bg-white/72 px-4 py-4">
       <span class="text-sm text-[var(--ne-slate)]">
-        Pagina {{ page.pageNumber }} de {{ page.totalPages }}
+        Pagina {{ page.page }} de {{ page.pageCount }}
       </span>
 
       <div class="flex flex-wrap items-center gap-3">
@@ -264,8 +241,8 @@
           pButton
           type="button"
           severity="secondary"
-          [disabled]="!page.hasPreviousPage"
-          (click)="goToPage(page.pageNumber - 1)"
+          [disabled]="page.page <= 1"
+          (click)="goToPage(page.page - 1)"
         >
           Anterior
         </button>
@@ -273,8 +250,8 @@
           pButton
           type="button"
           severity="secondary"
-          [disabled]="!page.hasNextPage"
-          (click)="goToPage(page.pageNumber + 1)"
+          [disabled]="page.page >= page.pageCount"
+          (click)="goToPage(page.page + 1)"
         >
           Siguiente
         </button>

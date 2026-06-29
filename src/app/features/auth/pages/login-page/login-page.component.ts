@@ -51,10 +51,20 @@ export class LoginPageComponent {
   protected readonly requiresCompanySelection = computed(
     () => this.companyOptions().length > 0
   );
-  protected readonly infoMessage =
-    this.route.snapshot.queryParamMap.get('reason') === 'session-expired'
-      ? 'Tu sesion termino. Ingresa nuevamente para continuar.'
-      : null;
+  protected readonly infoMessage = (() => {
+    const reason = this.route.snapshot.queryParamMap.get('reason');
+
+    switch (reason) {
+      case 'session-expired':
+        return 'Tu sesion termino. Ingresa nuevamente para continuar.';
+      case 'password-changed':
+        return 'Tu contrasena fue actualizada. Inicia sesion nuevamente.';
+      case 'account-deactivated':
+        return 'Tu acceso al portal fue desactivado correctamente.';
+      default:
+        return null;
+    }
+  })();
   protected readonly loginForm = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]],

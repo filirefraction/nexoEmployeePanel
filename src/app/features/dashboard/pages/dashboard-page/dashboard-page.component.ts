@@ -191,6 +191,14 @@ export class DashboardPageComponent {
       };
     }
 
+    if ((summary?.vacationBalanceDays ?? 0) > 0) {
+      return {
+        label: 'Solicitar vacaciones',
+        link: '/app/vacaciones',
+        queryParams: { action: 'new-request' }
+      };
+    }
+
     return {
       label: 'Ver perfil',
       link: '/app/perfil'

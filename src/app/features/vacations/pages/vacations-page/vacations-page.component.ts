@@ -1,18 +1,22 @@
-import { DatePipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
-import { Component, DestroyRef, inject } from '@angular/core';
+﻿import { DatePipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
+import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
+import { DialogModule } from 'primeng/dialog';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { MessageModule } from 'primeng/message';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
+import { EmployeeDashboardApiService } from '../../../dashboard/api/employee-dashboard.api.service';
 import { EmployeeVacationRequestsFacade } from '../../facades/employee-vacation-requests.facade';
 import {
   VacationRequest,
   VacationRequestListItem,
+  VacationRequestPreview,
   VacationRequestPreviewDay
 } from '../../models/vacation-request.model';
 
@@ -33,6 +37,7 @@ const VACATION_REQUEST_STATUS_IDS = {
     ReactiveFormsModule,
     ButtonModule,
     DatePickerModule,
+    DialogModule,
     FloatLabelModule,
     InputNumberModule,
     MessageModule,
@@ -44,7 +49,17 @@ const VACATION_REQUEST_STATUS_IDS = {
 export class VacationsPageComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly dashboardApi = inject(EmployeeDashboardApiService);
   protected readonly vacations = inject(EmployeeVacationRequestsFacade);
+
+  protected readonly activeStep = signal(1);
+  protected readonly isDetailDialogVisible = signal(false);
+  private readonly closeDetailAfterCancelState = signal(false);
+  protected readonly availableVacationDays = signal<number | null>(null);
+  protected readonly hasAvailableVacationDays = computed(
+    () => (this.availableVacationDays() ?? 0) > 0
+  );
 
   protected readonly filterForm = this.formBuilder.group({
     fromDate: this.formBuilder.control<Date | null>(null),
@@ -70,12 +85,79 @@ export class VacationsPageComponent {
 
   constructor() {
     this.vacations.load();
+    this.loadAvailableVacationDays();
+
+    effect(() => {
+      const availableDays = this.availableVacationDays();
+      const validators = [Validators.required, Validators.min(1)];
+
+      if (availableDays !== null) {
+        validators.push(Validators.max(availableDays));
+      }
+
+      this.requestForm.controls.requestedDays.setValidators(validators);
+      this.requestForm.controls.requestedDays.updateValueAndValidity({ emitEvent: false });
+    });
+
     this.requestForm.controls.fromDate.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.vacations.clearPreview());
+      .subscribe(() => {
+        this.vacations.clearPreview();
+        if (this.activeStep() === 2) {
+          this.activeStep.set(1);
+        }
+      });
+
     this.requestForm.controls.requestedDays.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.vacations.clearPreview());
+      .subscribe(() => {
+        this.vacations.clearPreview();
+        if (this.activeStep() === 2) {
+          this.activeStep.set(1);
+        }
+      });
+
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => {
+        if (params.get('action') === 'new-request') {
+          this.prepareNewRequestFlow();
+        }
+      });
+
+    effect(() => {
+      if (this.preview()) {
+        this.activeStep.set(2);
+      }
+    });
+
+    effect(() => {
+      if (this.successMessage() === 'Solicitud enviada correctamente.') {
+        this.loadAvailableVacationDays();
+        this.requestForm.reset({
+          fromDate: null,
+          requestedDays: 1,
+          reason: ''
+        });
+        this.activeStep.set(1);
+      }
+    });
+
+    effect(() => {
+      if (
+        this.closeDetailAfterCancelState() &&
+        this.successMessage() === 'Solicitud cancelada correctamente.'
+      ) {
+        this.closeDetailAfterCancelState.set(false);
+        this.closeDetail();
+      }
+    });
+
+    effect(() => {
+      if (this.closeDetailAfterCancelState() && !!this.errorMessage()) {
+        this.closeDetailAfterCancelState.set(false);
+      }
+    });
   }
 
   protected applyFilters(): void {
@@ -116,7 +198,7 @@ export class VacationsPageComponent {
     });
   }
 
-  protected calculatePreview(): void {
+  protected requestPreviewStep(): void {
     if (this.requestForm.invalid || this.isPreviewLoading()) {
       this.requestForm.markAllAsTouched();
       return;
@@ -130,11 +212,17 @@ export class VacationsPageComponent {
     });
   }
 
+  protected goToRequestStep(): void {
+    this.activeStep.set(1);
+  }
+
   protected viewRequest(id: string): void {
+    this.isDetailDialogVisible.set(true);
     this.vacations.selectRequest(id);
   }
 
   protected closeDetail(): void {
+    this.isDetailDialogVisible.set(false);
     this.vacations.clearSelection();
   }
 
@@ -145,13 +233,14 @@ export class VacationsPageComponent {
       return;
     }
 
+    this.closeDetailAfterCancelState.set(true);
     this.vacations.cancel(selected.id);
   }
 
   protected goToPage(pageNumber: number): void {
     const pagination = this.pagination();
 
-    if (!pagination || pageNumber < 1 || pageNumber > pagination.totalPages) {
+    if (!pagination || pageNumber < 1 || pageNumber > pagination.pageCount) {
       return;
     }
 
@@ -204,6 +293,40 @@ export class VacationsPageComponent {
     }
   }
 
+  protected getPreviewCountedDays(preview: VacationRequestPreview): number {
+    return preview.days.filter((day) => day.countsAsVacationDay).length;
+  }
+
+  protected getPreviewSkippedDays(preview: VacationRequestPreview): number {
+    return preview.days.filter((day) => !day.countsAsVacationDay).length;
+  }
+
+  protected getRequestedDaysErrorMessage(): string {
+    const control = this.requestForm.controls.requestedDays;
+
+    if (control.errors?.['required'] || control.errors?.['min']) {
+      return 'Ingresa al menos un día.';
+    }
+
+    if (control.errors?.['max']) {
+      const availableDays = this.availableVacationDays();
+
+      if (availableDays !== null) {
+        return `No puedes solicitar más de ${availableDays} día(s) disponibles.`;
+      }
+    }
+
+    return 'Valor inválido.';
+  }
+
+  protected getPreviewDayTagValue(day: VacationRequestPreviewDay): string {
+    return day.countsAsVacationDay ? 'Cuenta' : 'No cuenta';
+  }
+
+  protected getPreviewDayTagSeverity(day: VacationRequestPreviewDay): 'success' | 'secondary' {
+    return day.countsAsVacationDay ? 'success' : 'secondary';
+  }
+
   private resolveVacationRequestStatusCode(
     statusId: string,
     statusName?: string
@@ -243,13 +366,13 @@ export class VacationsPageComponent {
       case 'tuesday':
         return 'Martes';
       case 'wednesday':
-        return 'Miercoles';
+        return 'Miércoles';
       case 'thursday':
         return 'Jueves';
       case 'friday':
         return 'Viernes';
       case 'saturday':
-        return 'Sabado';
+        return 'Sábado';
       case 'sunday':
         return 'Domingo';
       default:
@@ -267,5 +390,23 @@ export class VacationsPageComponent {
     const day = `${value.getDate()}`.padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
-}
 
+  private loadAvailableVacationDays(): void {
+    this.dashboardApi.getSummary().subscribe({
+      next: (response) => {
+        this.availableVacationDays.set(response.data.vacationBalanceDays);
+      },
+      error: () => {
+        this.availableVacationDays.set(null);
+      }
+    });
+  }
+
+  private prepareNewRequestFlow(): void {
+    this.isDetailDialogVisible.set(false);
+    this.closeDetailAfterCancelState.set(false);
+    this.vacations.clearSelection();
+    this.vacations.clearPreview();
+    this.activeStep.set(1);
+  }
+}

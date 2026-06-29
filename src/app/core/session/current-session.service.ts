@@ -81,6 +81,11 @@ export class CurrentSessionService {
     void this.router.navigate([reason === 'session-expired' ? '/session-expired' : '/login']);
   }
 
+  redirectToLoginWithReason(reason: 'password-changed' | 'account-deactivated'): void {
+    this.clearSession();
+    void this.router.navigate(['/login'], { queryParams: { reason } });
+  }
+
   rejectIncompatibleSession(): void {
     this.clearSession();
     void this.router.navigate(['/access-denied']);

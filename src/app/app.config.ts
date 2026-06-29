@@ -10,6 +10,7 @@ import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@a
 import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideServiceWorker } from '@angular/service-worker';
+import { ConfirmationService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { AuthInterceptor } from './core/http/auth.interceptor';
 import { CorrelationIdInterceptor } from './core/http/correlation-id.interceptor';
@@ -21,6 +22,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideAnimationsAsync(),
+    ConfirmationService,
     provideRouter(routes),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),

@@ -1,6 +1,7 @@
 import base from '@primeuix/themes/aura/base';
 import button from '@primeuix/themes/aura/button';
 import datepicker from '@primeuix/themes/aura/datepicker';
+import dialog from '@primeuix/themes/aura/dialog';
 import floatlabel from '@primeuix/themes/aura/floatlabel';
 import inputnumber from '@primeuix/themes/aura/inputnumber';
 import inputtext from '@primeuix/themes/aura/inputtext';
@@ -16,6 +17,7 @@ const NexoPrimePreset = {
   components: {
     button,
     datepicker,
+    dialog,
     floatlabel,
     inputnumber,
     inputtext,

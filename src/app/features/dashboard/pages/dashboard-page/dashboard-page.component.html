@@ -111,6 +111,7 @@
 
             <a
               [routerLink]="secondaryAction().link"
+              [queryParams]="secondaryAction().queryParams ?? null"
               class="inline-flex min-h-[2.75rem] items-center justify-center rounded-[0.5rem] border border-[var(--ne-brand)] bg-transparent px-[0.95rem] text-[0.875rem] font-semibold !text-[var(--ne-brand-strong)] transition duration-150 hover:bg-[rgba(15,118,110,0.04)]"
             >
               {{ secondaryAction().label }}
@@ -223,9 +224,10 @@
 
         <a
           routerLink="/app/vacaciones"
+          [queryParams]="data.pendingVacationRequests > 0 ? null : { action: 'new-request' }"
           class="inline-flex min-h-[2.75rem] items-center justify-center rounded-[0.5rem] border border-[var(--ne-brand)] bg-transparent px-[0.95rem] text-[0.875rem] font-semibold !text-[var(--ne-brand-strong)] transition duration-150 hover:bg-[rgba(15,118,110,0.04)]"
         >
-          Abrir vacaciones
+          {{ data.pendingVacationRequests > 0 ? 'Revisar vacaciones' : 'Solicitar vacaciones' }}
         </a>
       </article>
     </section>

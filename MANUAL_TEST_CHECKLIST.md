@@ -296,7 +296,7 @@ Resultado:
 
 Esperado:
 
-- datos cargados desde `employee-summary`
+- datos cargados desde `GET /api/employee/v1/profile`
 - modo solo lectura explicito
 - no mostrar controles de edicion inexistentes
 

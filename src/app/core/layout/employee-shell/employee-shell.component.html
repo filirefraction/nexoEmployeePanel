@@ -22,16 +22,16 @@
         </div>
 
         <div
-          *ngIf="!currentUser()?.imageUrl"
+          *ngIf="!avatarUrl()"
           class="flex h-9 w-9 items-center justify-center overflow-hidden rounded-2xl border border-[var(--ne-line)] bg-[var(--ne-surface)] text-sm font-semibold text-[var(--ne-brand-strong)] shadow-[0_8px_18px_rgba(23,26,31,0.05)]"
         >
           {{ initials() }}
         </div>
 
         <img
-          *ngIf="currentUser()?.imageUrl"
+          *ngIf="avatarUrl()"
           class="h-9 w-9 rounded-2xl object-cover shadow-[0_8px_18px_rgba(23,26,31,0.06)]"
-          [src]="currentUser()?.imageUrl ?? ''"
+          [src]="avatarUrl() ?? ''"
           [alt]="displayName()"
         />
 
@@ -67,4 +67,10 @@
       </a>
     </div>
   </nav>
+
+  <p-confirmdialog
+    [draggable]="false"
+    [style]="{ width: 'min(420px, 92vw)' }"
+    appendTo="body"
+  ></p-confirmdialog>
 </div>

@@ -26,7 +26,7 @@
     </div>
 
     <div class="flex flex-wrap gap-3">
-      <button pButton type="button" severity="secondary" (click)="dashboard.load()">
+      <button pButton type="button" severity="secondary" (click)="profile.load()">
         Reintentar
       </button>
     </div>
@@ -95,6 +95,13 @@
 
       <div class="grid gap-0 divide-y divide-[var(--ne-line)] rounded-[20px] border border-[var(--ne-line)] bg-white/76">
         <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+          <strong class="text-sm font-semibold text-[var(--ne-ink)]">Cuenta</strong>
+          <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+            {{ currentUser()?.email || data.employee.email || 'No capturado' }}
+          </p>
+        </div>
+
+        <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
           <strong class="text-sm font-semibold text-[var(--ne-ink)]">Numero de empleado</strong>
           <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">{{ data.employee.employeeNumber || 'No capturado' }}</p>
         </div>
@@ -114,6 +121,17 @@
           <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
             {{ data.localNow | date: 'fullDate' : undefined : 'es-MX' }}<br />
             {{ data.localNow | date: 'shortTime' : undefined : 'es-MX' }}
+          </p>
+        </div>
+
+        <div class="grid gap-1 p-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+          <strong class="text-sm font-semibold text-[var(--ne-ink)]">Ultimo acceso</strong>
+          <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+            {{
+              currentUser()?.lastLoginDate
+                ? (currentUser()?.lastLoginDate | date: 'dd/MM/yyyy HH:mm' : undefined : 'es-MX')
+                : 'No disponible'
+            }}
           </p>
         </div>
       </div>
@@ -146,5 +164,206 @@
         </div>
       </div>
     </article>
+
+    <article class="surface-card grid gap-4 p-5 sm:p-6">
+      <div class="grid gap-1">
+        <span class="pill-chip">Seguridad</span>
+      </div>
+
+      <div class="grid gap-3">
+        <section class="rounded-[22px] border border-[var(--ne-line)] bg-white/78 p-4">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div class="grid gap-1">
+              <h2 class="m-0 text-base font-semibold text-[var(--ne-ink)]">Cambiar contrasena</h2>
+              <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+                Actualiza tu acceso al portal. Al guardar, tendras que iniciar sesion nuevamente.
+              </p>
+            </div>
+
+            <button
+              pButton
+              type="button"
+              severity="secondary"
+              [text]="true"
+              (click)="openChangePasswordDialog()"
+            >
+              Actualizar
+            </button>
+          </div>
+        </section>
+
+        <section class="rounded-[22px] border border-[rgba(180,35,24,0.12)] bg-[rgba(255,245,244,0.7)] p-4">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div class="grid gap-1">
+              <h2 class="m-0 text-base font-semibold text-[var(--ne-ink)]">Solicitar eliminacion de cuenta</h2>
+              <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
+                Esta accion desactiva tu acceso al portal personal y cierra tu sesion actual.
+              </p>
+            </div>
+
+            <button
+              pButton
+              type="button"
+              severity="danger"
+              [text]="true"
+              (click)="toggleDeleteAccount()"
+            >
+              {{ deleteAccountExpanded() ? 'Ocultar' : 'Solicitar eliminacion' }}
+            </button>
+          </div>
+
+          @if (deleteAccountExpanded()) {
+            <form class="mt-4 grid gap-4" [formGroup]="deleteAccountForm" (ngSubmit)="submitDeleteAccount()">
+              <p-message
+                severity="warn"
+                text="Confirma tu contrasena actual para desactivar tu acceso."
+              ></p-message>
+              <p-message
+                *ngIf="deleteAccountErrorMessage()"
+                severity="error"
+                [text]="deleteAccountErrorMessage() ?? ''"
+              ></p-message>
+
+              <div class="grid gap-1.5">
+                <p-floatlabel variant="on">
+                  <p-password
+                    inputId="profile-delete-account-password"
+                    formControlName="currentPassword"
+                    [feedback]="false"
+                    [toggleMask]="true"
+                    [fluid]="true"
+                    inputStyleClass="w-full"
+                    styleClass="w-full"
+                  ></p-password>
+                  <label for="profile-delete-account-password">Contrasena actual</label>
+                </p-floatlabel>
+                @if (shouldShowDeleteAccountFieldError('currentPassword')) {
+                  <small class="text-xs font-medium text-[var(--ne-accent)]">
+                    Ingresa minimo 8 caracteres.
+                  </small>
+                }
+              </div>
+
+              <div class="flex flex-wrap justify-end gap-3">
+                <button pButton type="button" severity="secondary" [text]="true" (click)="toggleDeleteAccount()">
+                  Cancelar
+                </button>
+                <button
+                  pButton
+                  type="submit"
+                  severity="danger"
+                  [loading]="isDeletingAccount()"
+                  [disabled]="deleteAccountForm.invalid || isDeletingAccount()"
+                >
+                  Desactivar acceso
+                </button>
+              </div>
+            </form>
+          }
+        </section>
+      </div>
+    </article>
   </ng-container>
+
+  <p-dialog
+    header="Cambiar contrasena"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [dismissableMask]="true"
+    [style]="{ width: 'min(440px, calc(100vw - 1rem))' }"
+    [breakpoints]="{ '960px': 'calc(100vw - 1rem)', '640px': 'calc(100vw - 1rem)' }"
+    [contentStyle]="{ paddingTop: '5px' }"
+    appendTo="body"
+    [visible]="isChangePasswordDialogVisible()"
+    (visibleChange)="!$event && closeChangePasswordDialog()"
+  >
+    <form class="grid gap-4" [formGroup]="changePasswordForm" (ngSubmit)="submitChangePassword()">
+      <p-message
+        *ngIf="securityErrorMessage()"
+        severity="error"
+        [text]="securityErrorMessage() ?? ''"
+      ></p-message>
+
+      <div class="grid gap-4">
+        <div class="grid gap-1.5">
+          <p-floatlabel variant="on">
+            <p-password
+              inputId="profile-current-password"
+              formControlName="currentPassword"
+              [feedback]="false"
+              [toggleMask]="true"
+              [fluid]="true"
+              inputStyleClass="w-full"
+              styleClass="w-full"
+            ></p-password>
+            <label for="profile-current-password">Contrasena actual</label>
+          </p-floatlabel>
+          @if (shouldShowChangePasswordFieldError('currentPassword')) {
+            <small class="text-xs font-medium text-[var(--ne-accent)]">
+              Ingresa minimo 8 caracteres.
+            </small>
+          }
+        </div>
+
+        <div class="grid gap-1.5">
+          <p-floatlabel variant="on">
+            <p-password
+              inputId="profile-new-password"
+              formControlName="newPassword"
+              [feedback]="false"
+              [toggleMask]="true"
+              [fluid]="true"
+              inputStyleClass="w-full"
+              styleClass="w-full"
+            ></p-password>
+            <label for="profile-new-password">Nueva contrasena</label>
+          </p-floatlabel>
+          @if (shouldShowChangePasswordFieldError('newPassword')) {
+            <small class="text-xs font-medium text-[var(--ne-accent)]">
+              Ingresa minimo 8 caracteres.
+            </small>
+          }
+        </div>
+      </div>
+
+      <div class="grid gap-1.5">
+        <p-floatlabel variant="on">
+          <p-password
+            inputId="profile-confirm-password"
+            formControlName="confirmNewPassword"
+            [feedback]="false"
+            [toggleMask]="true"
+            [fluid]="true"
+            inputStyleClass="w-full"
+            styleClass="w-full"
+          ></p-password>
+          <label for="profile-confirm-password">Confirmar nueva contrasena</label>
+        </p-floatlabel>
+        @if (shouldShowChangePasswordFieldError('confirmNewPassword')) {
+          <small class="text-xs font-medium text-[var(--ne-accent)]">
+            Confirma la nueva contrasena.
+          </small>
+        } @else if (changePasswordForm.hasError('passwordMismatch') && changePasswordForm.controls.confirmNewPassword.touched) {
+          <small class="text-xs font-medium text-[var(--ne-accent)]">
+            Las contrasenas no coinciden.
+          </small>
+        }
+      </div>
+
+      <div class="flex flex-wrap justify-end gap-3">
+        <button pButton type="button" severity="secondary" [text]="true" (click)="closeChangePasswordDialog()">
+          Cancelar
+        </button>
+        <button
+          pButton
+          type="submit"
+          [loading]="isChangingPassword()"
+          [disabled]="changePasswordForm.invalid || isChangingPassword()"
+        >
+          Guardar contrasena
+        </button>
+      </div>
+    </form>
+  </p-dialog>
 </section>

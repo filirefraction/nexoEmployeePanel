@@ -35,6 +35,7 @@ Hoy el panel ya cubre:
   - creacion
   - cancelacion
 - perfil propio en modo solo lectura
+  - con carga dedicada desde `GET /api/employee/v1/profile`
 - pantallas de sistema:
   - acceso restringido
   - sesion expirada
@@ -94,6 +95,7 @@ Endpoints principales ya usados:
 - `GET /api/employee/v1/attendance/records`
 - `POST /api/employee/v1/attendance/check-in`
 - `POST /api/employee/v1/attendance/check-out`
+- `GET /api/employee/v1/profile`
 - `GET /api/employee/v1/vacation-requests`
 - `GET /api/employee/v1/vacation-requests/{id}`
 - `POST /api/employee/v1/vacation-requests`
