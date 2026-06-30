@@ -31,6 +31,7 @@
                 dateFormat="dd/mm/yy"
                 [showIcon]="true"
                 iconDisplay="input"
+                [minDate]="requestMinDate"
                 appendTo="body"
                 class="w-full"
               ></p-datepicker>
@@ -182,7 +183,7 @@
 
     <div class="grid gap-3">
       <p-message *ngIf="successMessage()" severity="success" [text]="successMessage() ?? ''"></p-message>
-      <p-message *ngIf="errorMessage()" severity="error" [text]="errorMessage() ?? ''"></p-message>
+      <p-message *ngIf="errorMessage() && !isDetailDialogVisible()" severity="error" [text]="errorMessage() ?? ''"></p-message>
     </div>
   </article>
 
@@ -334,12 +335,39 @@
             </div>
           </div>
 
-          <div class="grid gap-1 py-3 sm:grid-cols-[11rem_minmax(0,1fr)] sm:items-start">
+          <div class="grid gap-1 border-b border-[var(--ne-line)] py-3 sm:grid-cols-[11rem_minmax(0,1fr)] sm:items-start">
             <strong class="text-sm font-semibold text-[var(--ne-ink)]">Motivo</strong>
             <p class="m-0 text-sm leading-6 text-[var(--ne-slate)]">
               {{ detail.reason || 'Sin motivo.' }}
             </p>
           </div>
+          
+          @if (detail.days.length) {
+            <div class="grid gap-3 py-3">
+              <strong class="text-sm font-semibold text-[var(--ne-ink)]">Dias considerados</strong>
+
+              <ul class="grid gap-0">
+                <li
+                  *ngFor="let day of detail.days"
+                  class="grid gap-2 border-b border-[var(--ne-line)] py-3 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                >
+                  <div class="grid gap-0.5">
+                    <strong class="text-sm font-semibold text-[var(--ne-ink)]">
+                      {{ day.date | date: 'EEE d MMM y' : undefined : 'es-MX' }}
+                    </strong>
+                    <small class="text-xs text-[var(--ne-slate)]">
+                      {{ day.dayOfWeek }} &middot; {{ day.description }}
+                    </small>
+                  </div>
+
+                  <p-tag
+                    [value]="getPreviewDayTagValue(day)"
+                    [severity]="getPreviewDayTagSeverity(day)"
+                  ></p-tag>
+                </li>
+              </ul>
+            </div>
+          }
 
           <div *ngIf="detail.rejectedReason" class="mt-1 grid gap-1 rounded-xl bg-[rgba(180,35,24,0.04)] px-3 py-3 sm:grid-cols-[11rem_minmax(0,1fr)] sm:items-start">
             <strong class="text-sm font-semibold text-[var(--ne-ink)]">Motivo de rechazo</strong>
@@ -347,6 +375,10 @@
               {{ detail.rejectedReason }}
             </p>
           </div>
+        </div>
+
+        <div *ngIf="!isDetailLoading() && errorMessage()" class="border-t border-[var(--ne-line)] pt-4">
+          <p-message severity="error" [text]="errorMessage() ?? ''"></p-message>
         </div>
 
         <div *ngIf="!isDetailLoading()" class="flex flex-wrap justify-end gap-3 border-t border-[var(--ne-line)] pt-4">
@@ -371,3 +403,5 @@
     </div>
   </p-dialog>
 </section>
+
+

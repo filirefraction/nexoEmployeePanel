@@ -1,4 +1,4 @@
-export interface VacationRequestListItem {
+﻿export interface VacationRequestListItem {
   readonly id: string;
   readonly employeeId: string;
   readonly vacationRequestStatusId: string;
@@ -11,7 +11,13 @@ export interface VacationRequestListItem {
   readonly isRejected: boolean;
   readonly canCancel: boolean;
 }
-
+export interface VacationRequestDay {
+  readonly date: string;
+  readonly dayOfWeek: string;
+  readonly countsAsVacationDay: boolean;
+  readonly description: string;
+  readonly sortOrder: number;
+}
 export interface VacationRequest {
   readonly id: string;
   readonly employeeId: string;
@@ -30,33 +36,29 @@ export interface VacationRequest {
   readonly isApproved: boolean;
   readonly isRejected: boolean;
   readonly canCancel: boolean;
+  readonly days: readonly VacationRequestDay[];
 }
-
 export interface VacationRequestFilter {
   readonly pageNumber: number;
   readonly pageSize: number;
   readonly fromDate?: string | null;
   readonly toDate?: string | null;
 }
-
 export interface VacationRequestCreateRequest {
   readonly fromDate: string;
   readonly requestedDays: number;
   readonly reason?: string | null;
 }
-
 export interface VacationRequestPreviewRequest {
   readonly fromDate: string;
   readonly requestedDays: number;
 }
-
 export interface VacationRequestPreviewDay {
   readonly date: string;
   readonly dayOfWeek: string;
   readonly countsAsVacationDay: boolean;
   readonly description: string;
 }
-
 export interface VacationRequestPreview {
   readonly fromDate: string;
   readonly toDate: string;

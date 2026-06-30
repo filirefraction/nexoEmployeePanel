@@ -52,6 +52,11 @@ export class VacationsPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly dashboardApi = inject(EmployeeDashboardApiService);
   protected readonly vacations = inject(EmployeeVacationRequestsFacade);
+  protected readonly requestMinDate = (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  })();
 
   protected readonly activeStep = signal(1);
   protected readonly isDetailDialogVisible = signal(false);
@@ -149,6 +154,7 @@ export class VacationsPageComponent {
         this.successMessage() === 'Solicitud cancelada correctamente.'
       ) {
         this.closeDetailAfterCancelState.set(false);
+        this.loadAvailableVacationDays();
         this.closeDetail();
       }
     });
@@ -319,11 +325,11 @@ export class VacationsPageComponent {
     return 'Valor inválido.';
   }
 
-  protected getPreviewDayTagValue(day: VacationRequestPreviewDay): string {
+  protected getPreviewDayTagValue(day: { countsAsVacationDay: boolean }): string {
     return day.countsAsVacationDay ? 'Cuenta' : 'No cuenta';
   }
 
-  protected getPreviewDayTagSeverity(day: VacationRequestPreviewDay): 'success' | 'secondary' {
+  protected getPreviewDayTagSeverity(day: { countsAsVacationDay: boolean }): 'success' | 'secondary' {
     return day.countsAsVacationDay ? 'success' : 'secondary';
   }
 
@@ -410,3 +416,4 @@ export class VacationsPageComponent {
     this.activeStep.set(1);
   }
 }
+
